@@ -28,7 +28,8 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'www.nobledatagh.com'
+    'www.nobledatagh.com',
+    'noble-rjta3.ondigitalocean.app'
 ]
 
 

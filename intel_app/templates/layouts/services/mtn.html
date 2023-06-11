@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+  {% block content %}
+  {% include 'inc/header.html' %}
+
+  <header>
+    {% include 'inc/header.html' %}
+
+    <div class="container mt-5">
+      <div class="page-banner">
+        <div class="row justify-content-center align-items-center h-100">
+          <div class="col-md-6">
+            <nav aria-label="Breadcrumb">
+              <ul class="breadcrumb justify-content-center py-0 bg-transparent">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="{% url 'services' %}">Services</a></li>
+                <li class="breadcrumb-item active">MTN</li>
+              </ul>
+            </nav>
+            <h1 class="text-center">MTN Bundles</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-section" id="services">
+      <div class="container">
+          <div class="text-center">
+              <h2 class="title-section">Buy MTN Bundle</h2>
+              <div class="divider mx-auto"></div>
+          </div>
+
+          <form method="post" id="mtnPaymentForm">
+            {% csrf_token %}
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="phone">Phone Number</label>
+                {{form.phone_number}}
+                <small>Number must be 10 digits. E.g. 0270000000</small>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="inputPassword4">Bundle Offer</label>
+                {{form.offers}}
+              </div>
+            </div>
+            <input type="hidden" value={{email}} class="email">
+              <input type="hidden" value={{ref}} class="reference">
+            <button type="submit" onclick="payWithPaystack()" class="btn btn-primary">Pay</button>
+          </form>
+      </div>
+  </div> <!-- .page-section -->
+  </main>
+
+  {% include 'inc/footer.html' %}
+
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+  const paymentForm = document.getElementById('mtnPaymentForm');
+  let email = $(".email").val()
+  let ref = $(".reference").val()
+  console.log(email + ref)
+  paymentForm.addEventListener("submit", payWithPaystack, false);
+  function payWithPaystack(e) {
+    e.preventDefault();
+    let amount = $(".mtn-offer").val()
+    let phonenumber = $(".mtn-phone").val()
+    if (phonenumber.toString().length < 10 || phonenumber.toString().length != 10 || phonenumber.toString().length > 10){
+      Swal.fire({text: "Phone number must be 10 digits"})
+      return;
+    }
+
+  let handler = PaystackPop.setup({
+    key: 'pk_live_2230bb77b771f4a0486d82574d23c7e936ed8188', // Replace with your public key
+    email: email,
+    amount: amount * 100,
+    currency: "GHS",
+    ref: ref, // generates a pseudo-unique reference. Please replace with a reference you generated. Or remove the line entirely so our API will generate one for you
+    // label: "Optional string that replaces customer email"
+    onClose: function(){
+      swal("Transaction Closed");
+      location.reload()
+    },
+    callback: function(response){
+      reference = response.reference
+      let message = 'Payment complete! Reference: ' + response.reference;
+      Swal.fire({text: "Processing your order"})
+      Swal.showLoading();
+      let token = $("input[name=csrfmiddlewaretoken]").val();
+      $.ajax({
+        url: '/services/mtn/',
+        method: "POST",
+        data: {
+          phone: phonenumber,
+          amount: amount,
+          reference: reference,
+          csrfmiddlewaretoken: token,
+        },
+        success: function(response){
+          Swal.fire({text: response.status, icon:response.icon, confirmButtonText:"Okay"}).then((value) => {
+            location.reload()
+          })
+        }
+      })
+    }
+  });
+
+  handler.openIframe();
+}
+</script>  
+
+
+
+{% endblock scripts %}

@@ -100,16 +100,15 @@ WSGI_APPLICATION = 'intel.wsgi.application'
 #     }
 # }
 
-DB = config("DATABASE_URL")
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': DB["host"],
-        'PORT': DB["port"],
+        'HOST': config("DATABASE_HOST"),
+        'PORT': config("DATABASE_PORT"),
         'NAME': 'db',
-        'USER': DB["username"],
-        'PASSWORD': DB["password"],
+        'USER': config("DATABASE_USERNAME"),
+        'PASSWORD': config("DATABASE_PASSWORD"),
         'OPTIONS': {
             'sslmode': 'require'
         }

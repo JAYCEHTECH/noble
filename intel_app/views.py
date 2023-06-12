@@ -100,6 +100,8 @@ def airtel_tigo(request):
     context = {"form": form, "ref": reference, "email": user_email}
     return render(request, "layouts/services/at.html", context=context)
 
+
+@login_required(login_url='login')
 def mtn(request):
     form = forms.MTNForm()
     reference = helper.ref_generator()

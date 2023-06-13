@@ -55,6 +55,13 @@ def airtel_tigo(request):
 
         print(data)
 
+        sms_headers = {
+            'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
+            'Content-Type': 'application/json'
+        }
+
+        sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+
         if send_bundle_response.status_code == 200:
             if data["code"] == "0000":
                 transaction_to_be_updated = models.IShareBundleTransaction.objects.get(reference=payment_reference)
@@ -66,23 +73,39 @@ def airtel_tigo(request):
                 print("***********")
                 receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {request.user.phone}.\nReference: {payment_reference}\n"
                 sms_message = f"Hello @{request.user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {payment_reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
-                sms_url = f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=UmpEc1JzeFV4cERKTWxUWktqZEs&to=0{request.user.phone}&from=Noble Data GH&sms={sms_message}"
-                response = requests.request("GET", url=sms_url)
-                print(response.status_code)
+
+                receiver_body = {
+                    'recipient': phone_number,
+                    'sender_id': 'Noble Data',
+                    'message': receiver_message
+                }
+
+                response = requests.request('POST', url=sms_url, params=receiver_body, headers=sms_headers)
                 print(response.text)
-                r_sms_url = f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=UmpEc1JzeFV4cERKTWxUWktqZEs&to={phone_number}&from=Noble Data GH&sms={receiver_message}"
-                response = requests.request("GET", url=r_sms_url)
+
+                sms_body = {
+                    'recipient': f"0{request.user.phone}",
+                    'sender_id': 'Noble Data',
+                    'message': sms_message
+                }
+
+                response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+
                 print(response.text)
+
                 return JsonResponse({'status': 'Transaction Completed Successfully', 'icon': 'success'})
             else:
                 transaction_to_be_updated = models.IShareBundleTransaction.objects.get(reference=payment_reference)
                 transaction_to_be_updated.transaction_status = "Failed"
                 new_transaction.save()
-                receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {request.user.phone}.\nReference: {payment_reference}\n"
                 sms_message = f"Hello @{request.user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {phone_number}.\nReference: {payment_reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
-                sms_url = f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=UmpEc1JzeFV4cERKTWxUWktqZEs&to=0{request.user.phone}&from=Noble Data GH&sms={sms_message}"
-                response = requests.request("GET", url=sms_url)
-                print(response.status_code)
+
+                sms_body = {
+                    'recipient': f"0{request.user.phone}",
+                    'sender_id': 'Noble Data',
+                    'message': sms_message
+                }
+                response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
                 print(response.text)
                 # r_sms_url = f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=UmpEc1JzeFV4cERKTWxUWktqZEs&to={phone_number}&from=Noble Data GH&sms={receiver_message}"
                 # response = requests.request("GET", url=r_sms_url)
@@ -92,10 +115,17 @@ def airtel_tigo(request):
             transaction_to_be_updated = models.IShareBundleTransaction.objects.get(reference=payment_reference)
             transaction_to_be_updated.transaction_status = "Failed"
             new_transaction.save()
-            receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {request.user.phone}.\nReference: {payment_reference}\n"
             sms_message = f"Hello @{request.user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {phone_number}.\nReference: {payment_reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
-            sms_url = f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=UmpEc1JzeFV4cERKTWxUWktqZEs&to=0{request.user.phone}&from=Noble Data GH&sms={sms_message}"
-            response = requests.request("GET", url=sms_url)
+
+            sms_body = {
+                'recipient': f'0{request.user.phone}',
+                'sender_id': 'Noble Data',
+                'message': sms_message
+            }
+
+            response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+
+            print(response.text)
             return JsonResponse({'status': 'Something went wrong', 'icon': 'error'})
     context = {"form": form, "ref": reference, "email": user_email}
     return render(request, "layouts/services/at.html", context=context)

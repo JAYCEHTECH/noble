@@ -29,7 +29,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'www.nobledatagh.com',
-    'noble-rjta3.ondigitalocean.app'
+    'noble-rjta3.ondigitalocean.app',
+    '127.0.0.1'
 ]
 
 

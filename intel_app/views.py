@@ -165,6 +165,7 @@ def mtn(request):
     context = {'form': form, "ref": reference, "email": user_email}
     return render(request, "layouts/services/mtn.html", context=context)
 
+
 @login_required(login_url='login')
 def history(request):
     user_transactions = models.IShareBundleTransaction.objects.filter(user=request.user).order_by('transaction_date').reverse()
@@ -201,3 +202,41 @@ def verify_transaction(request, reference):
         except:
             status = data["status"]
         return JsonResponse({'status': status})
+
+
+@login_required(login_url='login')
+def admin_mtn_history(request):
+    if request.user.is_staff and request.user.is_superuser:
+        all_txns = models.MTNTransaction.objects.all()
+        context = {'txns': all_txns}
+        return render(request, "layouts/services/mtn_admin.html", context=context)
+
+
+@login_required(login_url='login')
+def mark_as_sent(request, pk):
+    if request.user.is_staff and request.user.is_superuser:
+        txn = models.MTNTransaction.objects.filter(id=pk).first()
+        print(txn)
+        txn.transaction_status = "Completed"
+        txn.save()
+        sms_headers = {
+            'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
+            'Content-Type': 'application/json'
+        }
+
+        sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+        sms_message = f"Your account has been credited with {txn.offer}.\nTransaction Reference: {txn.reference}"
+
+        sms_body = {
+            'recipient': f"233{txn.bundle_number}",
+            'sender_id': 'Noble Data',
+            'message': sms_message
+        }
+        response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+        print(response.text)
+        return redirect('mtn_admin')
+
+
+
+
+

@@ -15,6 +15,10 @@ urlpatterns = [
     path('history/mtn', views.mtn_history, name="mtn-history"),
     path('verify_transaction/<str:reference>/', views.verify_transaction, name="verify_transaction"),
 
+    path('mtn_admin', views.admin_mtn_history, name='mtn_admin'),
+
+    path('mark_as_sent/<int:pk>', views.mark_as_sent, name='mark_as_sent'),
+
     path('login', authViews.login_page, name='login'),
     path('signup', authViews.sign_up, name='signup'),
     path('logout', authViews.logout_user, name="logout")

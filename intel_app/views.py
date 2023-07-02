@@ -150,7 +150,6 @@ def mtn(request):
         phone_number = request.POST.get("phone")
         offer = request.POST.get("amount")
 
-
         bundle = models.MTNBundlePrice.objects.get(price=float(offer)).bundle_volume
 
         print(phone_number)
@@ -161,6 +160,21 @@ def mtn(request):
             reference=payment_reference,
         )
         new_mtn_transaction.save()
+        sms_headers = {
+            'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
+            'Content-Type': 'application/json'
+        }
+
+        sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+        sms_message = f"An order has been placed. {bundle}MB for {phone_number}"
+
+        sms_body = {
+            'recipient': "233549914001",
+            'sender_id': 'Noble Data',
+            'message': sms_message
+        }
+        response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+        print(response.text)
         return JsonResponse({'status': "Your transaction will be completed shortly", 'icon': 'success'})
     context = {'form': form, "ref": reference, "email": user_email}
     return render(request, "layouts/services/mtn.html", context=context)

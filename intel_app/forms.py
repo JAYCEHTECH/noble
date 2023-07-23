@@ -19,7 +19,7 @@ class CustomUserForm(UserCreationForm):
 
 
 class IShareBundleForm(forms.Form):
-    phone_number = forms.IntegerField(widget=forms.NumberInput(attrs={'class': 'form-control phone', 'placeholder': '233000000000', 'value': 233}))
+    phone_number = forms.IntegerField(widget=forms.NumberInput(attrs={'class': 'form-control phone', 'placeholder': '0270000000'}))
     offers = forms.ModelChoiceField(queryset=models.IshareBundlePrice.objects.all(), to_field_name='price', empty_label=None,
                                widget=forms.Select(attrs={'class': 'form-control airtime-input'}))
             

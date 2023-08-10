@@ -5,15 +5,25 @@ from . import models
 
 # Register your models here.
 class CustomUserAdmin(UserAdmin):
-    # list_display = ['first_name', 'last_name', 'username', 'email', 'phone']
+    list_display = ['first_name', 'last_name', 'username', 'email', 'wallet', 'phone']
+
+    fieldsets = (
+        *UserAdmin.fieldsets,
+        (
+            'Other Personal info',
+            {
+                'fields': (
+                    'phone', 'wallet'
+                )
+            }
+        )
+    )
 
     add_fieldsets = (
         (None, {
-            'fields': ('username', 'password1', 'password2')
-        }),
-        ('Personal info', {
-            'fields': ('first_name', 'last_name', 'email', 'phone')
-        }))
+            'classes': ('wide', ),
+            'fields': ('username', 'password1', 'password2', 'wallet')
+        }),)
     
 
 class IShareBundleTransactionAdmin(admin.ModelAdmin):
@@ -36,3 +46,4 @@ admin.site.register(models.MTNTransaction, MTNTransactionAdmin)
 admin.site.register(models.IshareBundlePrice)
 admin.site.register(models.MTNBundlePrice)
 admin.site.register(models.Payment, PaymentAdmin)
+admin.site.register(models.AdminInfo)

@@ -7,12 +7,89 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from . import helper, models
 
+
 # Create your views here.
 def home(request):
     return render(request, "layouts/index.html")
 
+
 def services(request):
     return render(request, "layouts/services.html")
+
+
+def pay_with_wallet(request):
+    if request.method == "POST":
+        admin = models.AdminInfo.objects.filter().first().phone_number
+        user = models.CustomUser.objects.get(id=request.user.id)
+        phone_number = request.POST.get("phone")
+        amount = request.POST.get("amount")
+        reference = request.POST.get("reference")
+        if user.wallet <= 0 or user.wallet < float(amount) or user.wallet is None:
+            return JsonResponse({'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
+        print(phone_number)
+        print(amount)
+        print(reference)
+        bundle = models.IshareBundlePrice.objects.get(price=float(amount)).bundle_volume
+        print(bundle)
+        send_bundle_response = helper.send_bundle(request.user, phone_number, bundle, reference)
+        data = send_bundle_response.json()
+        print(data)
+
+        sms_headers = {
+            'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
+            'Content-Type': 'application/json'
+        }
+
+        sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+        if send_bundle_response.status_code == 200:
+            if data["code"] == "0000":
+                new_transaction = models.IShareBundleTransaction.objects.create(
+                    user=request.user,
+                    bundle_number=phone_number,
+                    offer=f"{bundle}MB",
+                    reference=reference,
+                    transaction_status="Completed"
+                )
+                new_transaction.save()
+                user.wallet -= float(amount)
+                user.save()
+                receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {request.user.phone}.\nReference: {reference}\n"
+                sms_message = f"Hello @{request.user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
+
+                num_without_0 = phone_number[1:]
+                print(num_without_0)
+                receiver_body = {
+                    'recipient': f"233{num_without_0}",
+                    'sender_id': 'Noble Data',
+                    'message': receiver_message
+                }
+
+                response = requests.request('POST', url=sms_url, params=receiver_body, headers=sms_headers)
+                print(response.text)
+
+                sms_body = {
+                    'recipient': f"233{request.user.phone}",
+                    'sender_id': 'Noble Data',
+                    'message': sms_message
+                }
+
+                response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+
+                print(response.text)
+
+                return JsonResponse({'status': 'Transaction Completed Successfully', 'icon': 'success'})
+            else:
+                new_transaction = models.IShareBundleTransaction.objects.create(
+                    user=request.user,
+                    bundle_number=phone_number,
+                    offer=f"{bundle}MB",
+                    reference=reference,
+                    transaction_status="Failed"
+                )
+                new_transaction.save()
+                return JsonResponse({'status': 'Something went wrong'})
+    return redirect('airtel-tigo')
+
 
 @login_required(login_url='login')
 def airtel_tigo(request):
@@ -74,8 +151,10 @@ def airtel_tigo(request):
                 receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {request.user.phone}.\nReference: {payment_reference}\n"
                 sms_message = f"Hello @{request.user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {payment_reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
 
+                num_without_0 = phone_number[1:]
+                print(num_without_0)
                 receiver_body = {
-                    'recipient': phone_number,
+                    'recipient': f"233{num_without_0}",
                     'sender_id': 'Noble Data',
                     'message': receiver_message
                 }
@@ -127,7 +206,8 @@ def airtel_tigo(request):
 
             print(response.text)
             return JsonResponse({'status': 'Something went wrong', 'icon': 'error'})
-    context = {"form": form, "ref": reference, "email": user_email}
+    user = models.CustomUser.objects.get(id=request.user.id)
+    context = {"form": form, "ref": reference, "email": user_email, "wallet": 0 if user.wallet is None else user.wallet }
     return render(request, "layouts/services/at.html", context=context)
 
 
@@ -250,6 +330,26 @@ def mark_as_sent(request, pk):
         print(response.text)
         return redirect('mtn_admin')
 
+
+def credit_user(request):
+    form = forms.CreditUserForm()
+    if request.method == "POST":
+        form = forms.CreditUserForm(request.POST)
+        if form.is_valid():
+            user = form.cleaned_data["user"]
+            amount = form.cleaned_data["amount"]
+            print(user)
+            print(amount)
+            user_needed = models.CustomUser.objects.get(username=user)
+            if user_needed.wallet is None:
+                user_needed.wallet = 500
+            else:
+                user_needed.wallet += float(amount)
+            user_needed.save()
+            print(user_needed.username)
+            return redirect('credit_user')
+    context = {'form': form}
+    return render(request, "layouts/services/credit.html", context=context)
 
 
 

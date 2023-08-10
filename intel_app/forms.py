@@ -28,3 +28,9 @@ class MTNForm(forms.Form):
     phone_number = forms.IntegerField(widget=forms.NumberInput(attrs={'class': 'form-control mtn-phone', 'placeholder': '0200000000'}))
     offers = forms.ModelChoiceField(queryset=models.MTNBundlePrice.objects.all().order_by('price'), to_field_name='price', empty_label=None,
                                widget=forms.Select(attrs={'class': 'form-control mtn-offer'}))
+
+
+class CreditUserForm(forms.Form):
+    user = forms.ModelChoiceField(queryset=models.CustomUser.objects.all(), to_field_name='username', empty_label=None,
+                                  widget=forms.Select(attrs={'class': 'form-control airtime-input'}))
+    amount = forms.FloatField(widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '100'}))

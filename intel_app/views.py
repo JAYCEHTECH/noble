@@ -24,7 +24,9 @@ def pay_with_wallet(request):
         phone_number = request.POST.get("phone")
         amount = request.POST.get("amount")
         reference = request.POST.get("reference")
-        if user.wallet <= 0 or user.wallet < float(amount) or user.wallet is None:
+        if user.wallet is None:
+            return JsonResponse({'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
+        elif user.wallet <= 0 or user.wallet < float(amount):
             return JsonResponse({'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
         print(phone_number)
         print(amount)

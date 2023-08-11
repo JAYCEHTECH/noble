@@ -31,6 +31,6 @@ class MTNForm(forms.Form):
 
 
 class CreditUserForm(forms.Form):
-    user = forms.ModelChoiceField(queryset=models.CustomUser.objects.all().order_by('username').reverse(), to_field_name='username', empty_label=None,
+    user = forms.ModelChoiceField(queryset=models.CustomUser.objects.all().order_by('username'), to_field_name='username', empty_label=None,
                                   widget=forms.Select(attrs={'class': 'form-control airtime-input'}))
     amount = forms.FloatField(widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'GHS 100'}))

@@ -213,6 +213,51 @@ def airtel_tigo(request):
     return render(request, "layouts/services/at.html", context=context)
 
 
+def mtn_pay_with_wallet(request):
+    if request.method == "POST":
+        user = models.CustomUser.objects.get(id=request.user.id)
+        phone_number = request.POST.get("phone")
+        amount = request.POST.get("amount")
+        reference = request.POST.get("reference")
+        print(phone_number)
+        print(amount)
+        print(reference)
+        sms_headers = {
+            'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
+            'Content-Type': 'application/json'
+        }
+
+        sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+
+        if user.wallet is None:
+            return JsonResponse(
+                {'status': f'Your wallet balance is low. Contact the admin to recharge.'})
+        elif user.wallet <= 0 or user.wallet < float(amount):
+            return JsonResponse(
+                {'status': f'Your wallet balance is low. Contact the admin to recharge.'})
+        bundle = models.MTNBundlePrice.objects.get(price=float(amount)).bundle_volume
+        print(bundle)
+        sms_message = f"An order has been placed. {bundle}MB for {phone_number}"
+        new_mtn_transaction = models.MTNTransaction.objects.create(
+            user=request.user,
+            bundle_number=phone_number,
+            offer=f"{bundle}MB",
+            reference=reference,
+        )
+        new_mtn_transaction.save()
+        user.wallet -= float(amount)
+        user.save()
+        sms_body = {
+            'recipient': "233549914001",
+            'sender_id': 'Noble Data',
+            'message': sms_message
+        }
+        response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+        print(response.text)
+        return JsonResponse({'status': "Your transaction will be completed shortly", 'icon': 'success'})
+    return redirect('mtn')
+
+
 @login_required(login_url='login')
 def mtn(request):
     form = forms.MTNForm()

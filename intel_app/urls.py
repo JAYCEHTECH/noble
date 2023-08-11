@@ -20,6 +20,7 @@ urlpatterns = [
     path('mark_as_sent/<int:pk>', views.mark_as_sent, name='mark_as_sent'),
     path('credit_user', views.credit_user, name='credit_user'),
     path('pay_with_wallet/', views.pay_with_wallet, name='pay_with_wallet'),
+    path('mtn_pay_with_wallet/', views.mtn_pay_with_wallet, name='mtn_pay_with_wallet'),
 
     path('login', authViews.login_page, name='login'),
     path('signup', authViews.sign_up, name='signup'),

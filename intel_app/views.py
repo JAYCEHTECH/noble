@@ -303,7 +303,8 @@ def mtn(request):
         response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
         print(response.text)
         return JsonResponse({'status': "Your transaction will be completed shortly", 'icon': 'success'})
-    context = {'form': form, "ref": reference, "email": user_email}
+    user = models.CustomUser.objects.get(id=request.user.id)
+    context = {'form': form, "ref": reference, "email": user_email, "wallet": 0 if user.wallet is None else user.wallet}
     return render(request, "layouts/services/mtn.html", context=context)
 
 

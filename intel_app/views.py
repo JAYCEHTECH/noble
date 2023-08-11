@@ -228,13 +228,12 @@ def mtn_pay_with_wallet(request):
         }
 
         sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+        admin = models.AdminInfo.objects.filter().first().phone_number
 
         if user.wallet is None:
-            return JsonResponse(
-                {'status': f'Your wallet balance is low. Contact the admin to recharge.'})
+            return JsonResponse({'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
         elif user.wallet <= 0 or user.wallet < float(amount):
-            return JsonResponse(
-                {'status': f'Your wallet balance is low. Contact the admin to recharge.'})
+            return JsonResponse({'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
         bundle = models.MTNBundlePrice.objects.get(price=float(amount)).bundle_volume
         print(bundle)
         sms_message = f"An order has been placed. {bundle}MB for {phone_number}"

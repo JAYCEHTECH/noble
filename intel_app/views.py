@@ -390,7 +390,7 @@ def credit_user(request):
             print(amount)
             user_needed = models.CustomUser.objects.get(username=user)
             if user_needed.wallet is None:
-                user_needed.wallet = 500
+                user_needed.wallet = float(amount)
             else:
                 user_needed.wallet += float(amount)
             user_needed.save()

@@ -20,8 +20,16 @@ class CustomUserForm(UserCreationForm):
 
 class IShareBundleForm(forms.Form):
     phone_number = forms.IntegerField(widget=forms.NumberInput(attrs={'class': 'form-control phone', 'placeholder': '0270000000'}))
-    offers = forms.ModelChoiceField(queryset=models.IshareBundlePrice.objects.all(), to_field_name='price', empty_label=None,
+    offers = forms.ModelChoiceField(queryset=None, to_field_name='price', empty_label=None,
                                widget=forms.Select(attrs={'class': 'form-control airtime-input'}))
+
+    def __init__(self, status, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if status == "User":
+            self.fields['offers'].queryset = models.IshareBundlePrice.objects.all()
+        elif status == "Agent":
+            self.fields['offers'].queryset = models.AgentIshareBundlePrice.objects.all()
+        # self.fields['size'].queryset = models.Size.objects.filter(domain=domain)
             
 
 class MTNForm(forms.Form):
@@ -30,7 +38,19 @@ class MTNForm(forms.Form):
                                widget=forms.Select(attrs={'class': 'form-control mtn-offer'}))
 
 
+    def __init__(self, status, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if status == "User":
+            self.fields['offers'].queryset = models.MTNBundlePrice.objects.all()
+        elif status == "Agent":
+            self.fields['offers'].queryset = models.AgentMTNBundlePrice.objects.all()
+        # self.fields['size'].queryset = models.Size.objects.filter(domain=domain)
+
+
 class CreditUserForm(forms.Form):
     user = forms.ModelChoiceField(queryset=models.CustomUser.objects.all().order_by('username'), to_field_name='username', empty_label=None,
                                   widget=forms.Select(attrs={'class': 'form-control airtime-input'}))
     amount = forms.FloatField(widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'GHS 100'}))
+
+
+

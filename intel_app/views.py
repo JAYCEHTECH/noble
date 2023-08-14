@@ -95,11 +95,13 @@ def pay_with_wallet(request):
 
 @login_required(login_url='login')
 def airtel_tigo(request):
-    form = forms.IShareBundleForm()
+    user = models.CustomUser.objects.get(id=request.user.id)
+    status = user.status
+    form = forms.IShareBundleForm(status)
     reference = helper.ref_generator()
     user_email = request.user.email
     if request.method == "POST":
-        form = forms.IShareBundleForm(request.POST)
+        form = forms.IShareBundleForm(data=request.POST, status=status)
         payment_reference = request.POST.get("reference")
         amount_paid = request.POST.get("amount")
         new_payment = models.Payment.objects.create(

@@ -13,7 +13,7 @@ class CustomUserAdmin(UserAdmin):
             'Other Personal info',
             {
                 'fields': (
-                    'phone', 'wallet'
+                    'phone', 'wallet', 'status'
                 )
             }
         )
@@ -47,3 +47,5 @@ admin.site.register(models.IshareBundlePrice)
 admin.site.register(models.MTNBundlePrice)
 admin.site.register(models.Payment, PaymentAdmin)
 admin.site.register(models.AdminInfo)
+admin.site.register(models.AgentIshareBundlePrice)
+admin.site.register(models.AgentMTNBundlePrice)

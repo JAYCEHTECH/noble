@@ -175,7 +175,7 @@ const saveData = (data, reference, phone, currentAttempt = 0) => {
   let handler = PaystackPop.setup({
     key: 'pk_live_2230bb77b771f4a0486d82574d23c7e936ed8188', // Replace with your public key
     email: email,
-    amount: amount * 100,
+    amount: Math.round(amount * 100),
     currency: "GHS",
     ref: ref, // generates a pseudo-unique reference. Please replace with a reference you generated. Or remove the line entirely so our API will generate one for you
     // label: "Optional string that replaces customer email"
@@ -250,6 +250,8 @@ $("body").on('click', '.pay-with-wallet', function(e){
   // Call the function on page load
   let offerMtn = getSelectedText();
   let bundle_volume = jsonData[offerMtn]
+  console.log(bundle_volume)
+  console.log(jsonData)
 
 
 
@@ -336,7 +338,7 @@ const saveData = (data, reference, phone) => {
       }
     })
 };
-
+  console.log(bundle_volume + "yoooo")
   let data = {
         "user_id": "{{user_id}}",
         "receiver": phonenumber,

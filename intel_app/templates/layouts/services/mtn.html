@@ -196,7 +196,7 @@ const saveData = (data, reference, phone, currentAttempt = 0) => {
         "data_volume": bundle_volume,
         "reference": reference,
         "amount": amount,
-        "channel": "wallet"
+        "channel": "{{phone_num}}"
       }
       saveData(data, reference, phonenumber)
 
@@ -345,7 +345,7 @@ const saveData = (data, reference, phone) => {
         "data_volume": bundle_volume,
         "reference": ref,
         "amount": amount,
-        "channel": "wallet"
+        "channel": "{{phone_num}}"
       }
   saveData(data, ref, phonenumber)
   })

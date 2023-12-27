@@ -312,6 +312,7 @@ def mtn(request):
         # print(response.text)
         return JsonResponse({'status': "Your transaction will be completed shortly", 'icon': 'success'})
     user = models.CustomUser.objects.get(id=request.user.id)
+    phone_num = user.phone
     mtn_dict = {}
 
     if user.status == "Agent":
@@ -320,7 +321,7 @@ def mtn(request):
         mtn_offer = models.MTNBundlePrice.objects.all()
     for offer in mtn_offer:
         mtn_dict[str(offer)] = offer.bundle_volume
-    context = {'form': form, 'auth': auth, 'user_id': user_id, 'mtn_dict': json.dumps(mtn_dict), "ref": reference, "email": user_email, "wallet": 0 if user.wallet is None else user.wallet}
+    context = {'form': form, 'phone_num': phone_num, 'auth': auth, 'user_id': user_id, 'mtn_dict': json.dumps(mtn_dict), "ref": reference, "email": user_email, "wallet": 0 if user.wallet is None else user.wallet}
     return render(request, "layouts/services/mtn.html", context=context)
 
 

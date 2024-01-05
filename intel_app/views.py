@@ -1,9 +1,11 @@
+import hashlib
+import hmac
 import json
 from datetime import datetime
 
 from decouple import config
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import requests
 from . import forms
 from django.contrib import messages
@@ -226,6 +228,8 @@ def mtn_pay_with_wallet(request):
         reference = request.POST.get("reference")
         print(phone_number)
         print(amount)
+        auth = config("AT")
+        user_id = config("USER_ID")
         print(reference)
         sms_headers = {
             'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
@@ -240,6 +244,25 @@ def mtn_pay_with_wallet(request):
         elif user.wallet <= 0 or user.wallet < float(amount):
             return JsonResponse({'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
         bundle = models.MTNBundlePrice.objects.get(price=float(amount)).bundle_volume if user.status == "User" else models.AgentMTNBundlePrice.objects.get(price=float(amount)).bundle_volume
+
+        url = "https://posapi.bestpaygh.com/api/v1/initiate_mtn_transaction"
+
+        payload = json.dumps({
+            "user_id": user_id,
+            "receiver": phone_number,
+            "data_volume": bundle,
+            "reference": reference,
+            "amount": amount,
+            "channel": "wallet"
+        })
+        headers = {
+            'Authorization': auth,
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+
+        print(response.text)
         print(bundle)
         sms_message = f"An order has been placed. {bundle}MB for {phone_number}"
         new_mtn_transaction = models.MTNTransaction.objects.create(
@@ -251,13 +274,6 @@ def mtn_pay_with_wallet(request):
         new_mtn_transaction.save()
         user.wallet -= float(amount)
         user.save()
-        sms_body = {
-            'recipient': f"233{admin}",
-            'sender_id': 'Noble Data',
-            'message': sms_message
-        }
-        # response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
-        # print(response.text)
         return JsonResponse({'status': "Your transaction will be completed shortly", 'icon': 'success'})
     return redirect('mtn')
 
@@ -286,7 +302,24 @@ def mtn(request):
         offer = request.POST.get("amount")
 
         bundle = models.MTNBundlePrice.objects.get(price=float(offer)).bundle_volume if user.status == "User" else models.AgentMTNBundlePrice.objects.get(price=float(offer)).bundle_volume
+        url = "https://posapi.bestpaygh.com/api/v1/initiate_mtn_transaction"
 
+        payload = json.dumps({
+            "user_id": user_id,
+            "receiver": phone_number,
+            "data_volume": bundle,
+            "reference": reference,
+            "amount": offer,
+            "channel": "wallet"
+        })
+        headers = {
+            'Authorization': auth,
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+
+        print(response.text)
         print(phone_number)
         new_mtn_transaction = models.MTNTransaction.objects.create(
             user=request.user,
@@ -323,6 +356,162 @@ def mtn(request):
         mtn_dict[str(offer)] = offer.bundle_volume
     context = {'form': form, 'phone_num': phone_num, 'auth': auth, 'user_id': user_id, 'mtn_dict': json.dumps(mtn_dict), "ref": reference, "email": user_email, "wallet": 0 if user.wallet is None else user.wallet}
     return render(request, "layouts/services/mtn.html", context=context)
+
+
+def paystack_webhook(request):
+    if request.method == "POST":
+        paystack_secret_key = config("PAYSTACK_SECRET_KEY")
+        # print(paystack_secret_key)
+        payload = json.loads(request.body)
+
+        paystack_signature = request.headers.get("X-Paystack-Signature")
+
+        if not paystack_secret_key or not paystack_signature:
+            return HttpResponse(status=400)
+
+        computed_signature = hmac.new(
+            paystack_secret_key.encode('utf-8'),
+            request.body,
+            hashlib.sha512
+        ).hexdigest()
+
+        if computed_signature == paystack_signature:
+            print("yes")
+            print(payload.get('data'))
+            r_data = payload.get('data')
+            print(r_data.get('metadata'))
+            print(payload.get('event'))
+            if payload.get('event') == 'charge.success':
+                metadata = r_data.get('metadata')
+                receiver = metadata.get('receiver')
+                bundle_package = metadata.get('bundle_package')
+                offer = metadata.get('offer')
+                user = models.CustomUser.objects.get(id=metadata.get('user_id'))
+                channel = metadata.get('channel')
+                real_amount = metadata.get('real_amount')
+                print(real_amount)
+                paid_amount = r_data.get('amount')
+                email = r_data.get('email')
+                reference = r_data.get('reference')
+
+                if channel == "ishare":
+                    bundle = models.MTNBundlePrice.objects.get(price=float(
+                        offer)).bundle_volume if user.status == "User" else models.AgentMTNBundlePrice.objects.get(
+                        price=float(offer)).bundle_volume
+                    if models.IShareBundleTransaction.objects.filter(reference=reference, offer=offer, transaction_status="Completed").exists():
+                        return HttpResponse(status=200)
+                    new_transaction = models.IShareBundleTransaction.objects.create(
+                        user=request.user,
+                        bundle_number=receiver,
+                        offer=f"{bundle}MB",
+                        reference=reference,
+                        transaction_status="Pending"
+                    )
+                    new_transaction.save()
+                    send_bundle_response = helper.send_bundle(request.user, receiver, bundle, reference)
+                    data = send_bundle_response.json()
+
+                    print(data)
+
+                    sms_headers = {
+                        'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
+                        'Content-Type': 'application/json'
+                    }
+
+                    sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+
+                    if send_bundle_response.status_code == 200:
+                        if data["code"] == "0000":
+                            transaction_to_be_updated = models.IShareBundleTransaction.objects.get(
+                                reference=reference)
+                            print("got here")
+                            print(transaction_to_be_updated.transaction_status)
+                            transaction_to_be_updated.transaction_status = "Completed"
+                            transaction_to_be_updated.save()
+                            print(request.user.phone)
+                            print("***********")
+                            receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {request.user.phone}.\nReference: {payment_reference}\n"
+                            sms_message = f"Hello @{request.user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {payment_reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
+
+                            num_without_0 = receiver[1:]
+                            print(num_without_0)
+                            receiver_body = {
+                                'recipient': f"233{num_without_0}",
+                                'sender_id': 'Noble Data',
+                                'message': receiver_message
+                            }
+
+                            response = requests.request('POST', url=sms_url, params=receiver_body, headers=sms_headers)
+                            print(response.text)
+
+                            sms_body = {
+                                'recipient': f"233{request.user.phone}",
+                                'sender_id': 'Noble Data',
+                                'message': sms_message
+                            }
+
+                            response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+
+                            print(response.text)
+
+                            return HttpResponse(status=200)
+                        else:
+                            transaction_to_be_updated = models.IShareBundleTransaction.objects.get(
+                                reference=reference)
+                            transaction_to_be_updated.transaction_status = "Failed"
+                            new_transaction.save()
+                            sms_message = f"Hello @{request.user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {phone_number}.\nReference: {payment_reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
+
+                            sms_body = {
+                                'recipient': f"233{request.user.phone}",
+                                'sender_id': 'Noble Data',
+                                'message': sms_message
+                            }
+                            response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+                            print(response.text)
+                            return HttpResponse(status=500)
+                    else:
+                        transaction_to_be_updated = models.IShareBundleTransaction.objects.get(
+                            reference=reference)
+                        transaction_to_be_updated.transaction_status = "Failed"
+                        new_transaction.save()
+                        sms_message = f"Hello @{request.user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {phone_number}.\nReference: {payment_reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
+
+                        sms_body = {
+                            'recipient': f'233{request.user.phone}',
+                            'sender_id': 'Noble Data',
+                            'message': sms_message
+                        }
+
+                        response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+
+                        print(response.text)
+                        return HttpResponse(status=500)
+                elif channel == "mtn":
+                    new_payment = models.Payment.objects.create(
+                        user=request.user,
+                        reference=reference,
+                        amount=paid_amount,
+                        transaction_date=datetime.now(),
+                        transaction_status="Completed"
+                    )
+                    new_payment.save()
+
+                    bundle = models.MTNBundlePrice.objects.get(price=float(
+                        offer)).bundle_volume if user.status == "User" else models.AgentMTNBundlePrice.objects.get(
+                        price=float(offer)).bundle_volume
+
+                    print(receiver)
+                    new_mtn_transaction = models.MTNTransaction.objects.create(
+                        user=request.user,
+                        bundle_number=receiver,
+                        offer=f"{bundle}MB",
+                        reference=reference,
+                    )
+                    new_mtn_transaction.save()
+                    return HttpResponse(status=200)
+        else:
+            return HttpResponse(status=401)
 
 
 @login_required(login_url='login')

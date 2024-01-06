@@ -223,6 +223,7 @@ def airtel_tigo(request):
 def mtn_pay_with_wallet(request):
     if request.method == "POST":
         user = models.CustomUser.objects.get(id=request.user.id)
+        phone = user.phone
         phone_number = request.POST.get("phone")
         amount = request.POST.get("amount")
         reference = request.POST.get("reference")
@@ -253,7 +254,7 @@ def mtn_pay_with_wallet(request):
             "data_volume": bundle,
             "reference": reference,
             "amount": amount,
-            "channel": "wallet"
+            "channel": phone
         })
         print(auth)
         headers = {

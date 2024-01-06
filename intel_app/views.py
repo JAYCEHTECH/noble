@@ -255,6 +255,7 @@ def mtn_pay_with_wallet(request):
             "amount": amount,
             "channel": "wallet"
         })
+        print(auth)
         headers = {
             'Authorization': auth,
             'Content-Type': 'application/json'

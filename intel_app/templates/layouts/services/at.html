@@ -99,26 +99,27 @@
         location.reload();
       },
       callback: function(response){
-        reference = response.reference
-        let message = 'Payment complete! Reference: ' + response.reference;
-        Swal.fire({text: "Processing your order"})
-        Swal.showLoading();
-        let token = $("input[name=csrfmiddlewaretoken]").val();
-        $.ajax({
-          url: '/services/airtel-tigo/',
-          method: "POST",
-          data: {
-            phone: phonenumber,
-            amount: amount,
-            reference: reference,
-            csrfmiddlewaretoken: token,
-          },
-          success: function(response){
-            Swal.fire({text: response.status, icon:response.icon, confirmButtonText:"Okay"}).then((value) => {
-              location.reload()
-            })
-          }
-        })
+        location.reload()
+        // reference = response.reference
+        // let message = 'Payment complete! Reference: ' + response.reference;
+        // Swal.fire({text: "Processing your order"})
+        // Swal.showLoading();
+        // let token = $("input[name=csrfmiddlewaretoken]").val();
+        // $.ajax({
+        //   url: '/services/airtel-tigo/',
+        //   method: "POST",
+        //   data: {
+        //     phone: phonenumber,
+        //     amount: amount,
+        //     reference: reference,
+        //     csrfmiddlewaretoken: token,
+        //   },
+        //   success: function(response){
+        //     Swal.fire({text: response.status, icon:response.icon, confirmButtonText:"Okay"}).then((value) => {
+        //       location.reload()
+        //     })
+        //   }
+        // })
       }
     });
 

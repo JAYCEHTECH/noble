@@ -410,14 +410,14 @@ def paystack_webhook(request):
                     if models.IShareBundleTransaction.objects.filter(reference=reference, offer=f"{bundle}MB", transaction_status="Completed").exists():
                         return HttpResponse(status=200)
                     new_transaction = models.IShareBundleTransaction.objects.create(
-                        user=request.user,
+                        user=user,
                         bundle_number=receiver,
                         offer=f"{bundle}MB",
                         reference=reference,
                         transaction_status="Pending"
                     )
                     new_transaction.save()
-                    send_bundle_response = helper.send_bundle(request.user, receiver, bundle, reference)
+                    send_bundle_response = helper.send_bundle(user, receiver, bundle, reference)
                     data = send_bundle_response.json()
 
                     print(data)
@@ -437,7 +437,7 @@ def paystack_webhook(request):
                             print(transaction_to_be_updated.transaction_status)
                             transaction_to_be_updated.transaction_status = "Completed"
                             transaction_to_be_updated.save()
-                            print(request.user.phone)
+                            print(user.phone)
                             print("***********")
                             receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {user.phone}.\nReference: {reference}\n"
                             sms_message = f"Hello @{user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {receiver}.\nReference: {reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
@@ -487,7 +487,7 @@ def paystack_webhook(request):
                         sms_message = f"Hello @{request.user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {receiver}.\nReference: {reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
 
                         sms_body = {
-                            'recipient': f'233{request.user.phone}',
+                            'recipient': f'233{user.phone}',
                             'sender_id': 'Noble Data',
                             'message': sms_message
                         }
@@ -499,7 +499,7 @@ def paystack_webhook(request):
                 elif channel == "mtn":
                     user_id = metadata.get('user_id')
                     new_payment = models.Payment.objects.create(
-                        user=request.user,
+                        user=user,
                         reference=reference,
                         amount=paid_amount,
                         transaction_date=datetime.now(),
@@ -533,7 +533,7 @@ def paystack_webhook(request):
                     print(receiver)
 
                     new_mtn_transaction = models.MTNTransaction.objects.create(
-                        user=request.user,
+                        user=user,
                         bundle_number=receiver,
                         offer=f"{bundle}MB",
                         reference=reference,

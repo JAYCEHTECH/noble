@@ -540,6 +540,10 @@ def paystack_webhook(request):
                     )
                     new_mtn_transaction.save()
                     return HttpResponse(status=200)
+                else:
+                    return HttpResponse(status=200)
+            else:
+                return HttpResponse(status=200)
         else:
             return HttpResponse(status=401)
 

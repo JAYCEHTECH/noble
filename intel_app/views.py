@@ -404,8 +404,8 @@ def paystack_webhook(request):
                 reference = r_data.get('reference')
 
                 if channel == "ishare":
-                    bundle = models.MTNBundlePrice.objects.get(price=float(
-                        real_amount)).bundle_volume if user.status == "User" else models.AgentMTNBundlePrice.objects.get(
+                    bundle = models.IshareBundlePrice.objects.get(price=float(
+                        real_amount)).bundle_volume if user.status == "User" else models.AgentIshareBundlePrice.objects.get(
                         price=float(real_amount)).bundle_volume
                     if models.IShareBundleTransaction.objects.filter(reference=reference, offer=f"{bundle}MB", transaction_status="Completed").exists():
                         return HttpResponse(status=200)

@@ -387,21 +387,20 @@ def paystack_webhook(request):
             if payload.get('event') == 'charge.success':
                 metadata = r_data.get('metadata')
                 receiver = metadata.get('receiver')
-                bundle_package = metadata.get('bundle_package')
                 offer = metadata.get('offer')
-                user = models.CustomUser.objects.get(id=metadata.get('user_id'))
+                user = models.CustomUser.objects.get(id=request.user.id)
+                user_id = metadata.get('user_id')
                 channel = metadata.get('channel')
                 real_amount = metadata.get('real_amount')
                 print(real_amount)
                 paid_amount = r_data.get('amount')
-                email = r_data.get('email')
                 reference = r_data.get('reference')
 
                 if channel == "ishare":
                     bundle = models.MTNBundlePrice.objects.get(price=float(
-                        offer)).bundle_volume if user.status == "User" else models.AgentMTNBundlePrice.objects.get(
-                        price=float(offer)).bundle_volume
-                    if models.IShareBundleTransaction.objects.filter(reference=reference, offer=offer, transaction_status="Completed").exists():
+                        real_amount)).bundle_volume if user.status == "User" else models.AgentMTNBundlePrice.objects.get(
+                        price=float(real_amount)).bundle_volume
+                    if models.IShareBundleTransaction.objects.filter(reference=reference, offer=f"{bundle}MB", transaction_status="Completed").exists():
                         return HttpResponse(status=200)
                     new_transaction = models.IShareBundleTransaction.objects.create(
                         user=request.user,
@@ -501,10 +500,30 @@ def paystack_webhook(request):
                     new_payment.save()
 
                     bundle = models.MTNBundlePrice.objects.get(price=float(
-                        offer)).bundle_volume if user.status == "User" else models.AgentMTNBundlePrice.objects.get(
-                        price=float(offer)).bundle_volume
+                        real_amount)).bundle_volume if user.status == "User" else models.AgentMTNBundlePrice.objects.get(
+                        price=float(real_amount)).bundle_volume
+
+                    url = "https://posapi.bestpaygh.com/api/v1/initiate_mtn_transaction"
+
+                    payload = json.dumps({
+                        "user_id": user_id,
+                        "receiver": receiver,
+                        "data_volume": bundle,
+                        "reference": reference,
+                        "amount": real_amount,
+                        "channel": request.user.phone
+                    })
+                    headers = {
+                        'Authorization': config("AT"),
+                        'Content-Type': 'application/json'
+                    }
+
+                    response = requests.request("POST", url, headers=headers, data=payload)
+
+                    print(response.text)
 
                     print(receiver)
+
                     new_mtn_transaction = models.MTNTransaction.objects.create(
                         user=request.user,
                         bundle_number=receiver,

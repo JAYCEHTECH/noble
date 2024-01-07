@@ -103,6 +103,7 @@ def pay_with_wallet(request):
 @login_required(login_url='login')
 def airtel_tigo(request):
     user = models.CustomUser.objects.get(id=request.user.id)
+    db_user_id = request.user.id
     status = user.status
     form = forms.IShareBundleForm(status)
     reference = helper.ref_generator()
@@ -218,7 +219,7 @@ def airtel_tigo(request):
             print(response.text)
             return JsonResponse({'status': 'Something went wrong', 'icon': 'error'})
     user = models.CustomUser.objects.get(id=request.user.id)
-    context = {"form": form, "ref": reference, "email": user_email, "wallet": 0 if user.wallet is None else user.wallet }
+    context = {"form": form, 'id': db_user_id, "ref": reference, "email": user_email, "wallet": 0 if user.wallet is None else user.wallet }
     return render(request, "layouts/services/at.html", context=context)
 
 
@@ -285,6 +286,7 @@ def mtn_pay_with_wallet(request):
 @login_required(login_url='login')
 def mtn(request):
     user = models.CustomUser.objects.get(id=request.user.id)
+    db_user_id = request.user.id
     phone = user.phone
     status = user.status
     form = forms.MTNForm(status=status)
@@ -359,7 +361,7 @@ def mtn(request):
         mtn_offer = models.MTNBundlePrice.objects.all()
     for offer in mtn_offer:
         mtn_dict[str(offer)] = offer.bundle_volume
-    context = {'form': form, 'phone_num': phone_num, 'auth': auth, 'user_id': user_id, 'mtn_dict': json.dumps(mtn_dict), "ref": reference, "email": user_email, "wallet": 0 if user.wallet is None else user.wallet}
+    context = {'form': form, 'phone_num': phone_num, 'id': db_user_id, 'auth': auth, 'user_id': user_id, 'mtn_dict': json.dumps(mtn_dict), "ref": reference, "email": user_email, "wallet": 0 if user.wallet is None else user.wallet}
     return render(request, "layouts/services/mtn.html", context=context)
 
 
@@ -390,8 +392,11 @@ def paystack_webhook(request):
             if payload.get('event') == 'charge.success':
                 metadata = r_data.get('metadata')
                 receiver = metadata.get('receiver')
+                db_id = metadata.get('db_id')
+                print(db_id)
                 offer = metadata.get('offer')
-                user = models.CustomUser.objects.get(id=request.user.id)
+                user = models.CustomUser.objects.get(id=int(db_id))
+                print(user)
                 channel = metadata.get('channel')
                 real_amount = metadata.get('real_amount')
                 print(real_amount)
@@ -434,8 +439,8 @@ def paystack_webhook(request):
                             transaction_to_be_updated.save()
                             print(request.user.phone)
                             print("***********")
-                            receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {request.user.phone}.\nReference: {payment_reference}\n"
-                            sms_message = f"Hello @{request.user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {payment_reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
+                            receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {user.phone}.\nReference: {reference}\n"
+                            sms_message = f"Hello @{user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {receiver}.\nReference: {reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
 
                             num_without_0 = receiver[1:]
                             print(num_without_0)
@@ -449,7 +454,7 @@ def paystack_webhook(request):
                             print(response.text)
 
                             sms_body = {
-                                'recipient': f"233{request.user.phone}",
+                                'recipient': f"233{user.phone}",
                                 'sender_id': 'Noble Data',
                                 'message': sms_message
                             }
@@ -464,10 +469,10 @@ def paystack_webhook(request):
                                 reference=reference)
                             transaction_to_be_updated.transaction_status = "Failed"
                             new_transaction.save()
-                            sms_message = f"Hello @{request.user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {phone_number}.\nReference: {payment_reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
+                            sms_message = f"Hello @{user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {receiver}.\nReference: {reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
 
                             sms_body = {
-                                'recipient': f"233{request.user.phone}",
+                                'recipient': f"233{user.phone}",
                                 'sender_id': 'Noble Data',
                                 'message': sms_message
                             }
@@ -479,7 +484,7 @@ def paystack_webhook(request):
                             reference=reference)
                         transaction_to_be_updated.transaction_status = "Failed"
                         new_transaction.save()
-                        sms_message = f"Hello @{request.user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {phone_number}.\nReference: {payment_reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
+                        sms_message = f"Hello @{request.user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {receiver}.\nReference: {reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
 
                         sms_body = {
                             'recipient': f'233{request.user.phone}',
@@ -514,7 +519,7 @@ def paystack_webhook(request):
                         "data_volume": bundle,
                         "reference": reference,
                         "amount": real_amount,
-                        "channel": request.user.phone
+                        "channel": user.phone
                     })
                     headers = {
                         'Authorization': config("AT"),

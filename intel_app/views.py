@@ -7,6 +7,8 @@ from decouple import config
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 import requests
+from django.views.decorators.csrf import csrf_exempt
+
 from . import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -361,6 +363,7 @@ def mtn(request):
     return render(request, "layouts/services/mtn.html", context=context)
 
 
+@csrf_exempt
 def paystack_webhook(request):
     if request.method == "POST":
         paystack_secret_key = config("PAYSTACK_SECRET_KEY")

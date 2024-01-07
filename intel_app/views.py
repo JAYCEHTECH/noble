@@ -389,7 +389,6 @@ def paystack_webhook(request):
                 receiver = metadata.get('receiver')
                 offer = metadata.get('offer')
                 user = models.CustomUser.objects.get(id=request.user.id)
-                user_id = metadata.get('user_id')
                 channel = metadata.get('channel')
                 real_amount = metadata.get('real_amount')
                 print(real_amount)
@@ -490,6 +489,7 @@ def paystack_webhook(request):
                         print(response.text)
                         return HttpResponse(status=500)
                 elif channel == "mtn":
+                    user_id = metadata.get('user_id')
                     new_payment = models.Payment.objects.create(
                         user=request.user,
                         reference=reference,

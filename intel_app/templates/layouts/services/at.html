@@ -88,8 +88,12 @@
       email: email,
       amount: amount * 100,
       currency: "GHS",
-      ref: ref, // generates a pseudo-unique reference. Please replace with a reference you generated. Or remove the line entirely so our API will generate one for you
-      // label: "Optional string that replaces customer email"
+      ref: ref,
+      metadata: {
+      'receiver': phonenumber,
+      'channel': "wallet",
+      'real_amount': amount
+    },
       onClose: function(){
         swal("Transaction Closed");
         location.reload();

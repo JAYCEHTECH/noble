@@ -673,8 +673,11 @@ def topup_info(request):
             'sender_id': 'Noble Data',
             'message': sms_message
         }
-        response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
-        print(response.text)
+        try:
+            response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+            print(response.text)
+        except:
+            pass
         messages.success(request, f"Your Request has been sent successfully. Kindly go on to pay to {admin} and use the reference stated as reference. Reference: {reference}")
         return redirect("request_successful", reference)
     return render(request, "layouts/topup-info.html")
@@ -710,12 +713,17 @@ def credit_user_from_list(request, reference):
         crediting = models.TopUpRequest.objects.filter(reference=reference).first()
         user = crediting.user
         custom_user = models.CustomUser.objects.get(username=user.username)
+        if crediting.status:
+            return redirect('topup_list')
         amount = crediting.amount
         print(user)
         print(user.phone)
         print(amount)
         custom_user.wallet += amount
         custom_user.save()
+        crediting.status = True
+        crediting.credited_at = datetime.now()
+        crediting.save()
         sms_headers = {
             'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
             'Content-Type': 'application/json'
@@ -729,11 +737,12 @@ def credit_user_from_list(request, reference):
             'sender_id': 'Noble Data',
             'message': sms_message
         }
-        response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
-        print(response.text)
-        crediting.status = True
-        crediting.credited_at = datetime.now()
-        crediting.save()
+        try:
+            response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+            print(response.text)
+        except:
+            pass
+
         messages.success(request, f"{user} has been credited with {amount}")
         return redirect('topup_list')
 

@@ -674,6 +674,7 @@ def topup_info(request):
             'message': sms_message
         }
         try:
+            print("tried")
             response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
             print(response.text)
         except:
@@ -738,6 +739,7 @@ def credit_user_from_list(request, reference):
             'message': sms_message
         }
         try:
+            print("tried")
             response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
             print(response.text)
         except:

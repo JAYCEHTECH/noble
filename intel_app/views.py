@@ -408,7 +408,7 @@ def mtn(request):
             print(amount.price)
 
             details = {
-                'phone_number': phone_number,
+                'phone_number': f"0{phone_number}",
                 'offers': amount.price
             }
 

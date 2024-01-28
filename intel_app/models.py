@@ -228,3 +228,8 @@ class TopUpRequest(models.Model):
     status = models.BooleanField(default=False, blank=False, null=False)
     date = models.DateTimeField(auto_now_add=True)
     credited_at = models.DateTimeField(auto_now_add=True)
+
+
+class Announcement(models.Model):
+    message = models.CharField(max_length=500, null=True, blank=True)
+    active = models.BooleanField(default=True)

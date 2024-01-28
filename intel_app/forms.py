@@ -29,7 +29,10 @@ class IShareBundleForm(forms.Form):
             self.fields['offers'].queryset = models.IshareBundlePrice.objects.all()
         elif status == "Agent":
             self.fields['offers'].queryset = models.AgentIshareBundlePrice.objects.all()
-        # self.fields['size'].queryset = models.Size.objects.filter(domain=domain)
+        elif status == "Super Agent":
+            self.fields['offers'].queryset = models.SuperAgentIshareBundlePrice.objects.all()
+        else:
+            self.fields['offers'].queryset = models.IshareBundlePrice.objects.all()
             
 
 class MTNForm(forms.Form):
@@ -37,14 +40,16 @@ class MTNForm(forms.Form):
     offers = forms.ModelChoiceField(queryset=models.MTNBundlePrice.objects.all().order_by('price'), to_field_name='price', empty_label=None,
                                widget=forms.Select(attrs={'class': 'form-control mtn-offer'}))
 
-
     def __init__(self, status, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if status == "User":
             self.fields['offers'].queryset = models.MTNBundlePrice.objects.all()
         elif status == "Agent":
             self.fields['offers'].queryset = models.AgentMTNBundlePrice.objects.all()
-        # self.fields['size'].queryset = models.Size.objects.filter(domain=domain)
+        elif status == "Super Agent":
+            self.fields['offers'].queryset = models.SuperAgentMTNBundlePrice.objects.all()
+        else:
+            self.fields['offers'].queryset = models.MTNBundlePrice.objects.all()
 
 
 class CreditUserForm(forms.Form):
@@ -53,4 +58,32 @@ class CreditUserForm(forms.Form):
     amount = forms.FloatField(widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'GHS 100'}))
 
 
+class BigTimeBundleForm(forms.Form):
+    phone_number = forms.IntegerField(widget=forms.NumberInput(attrs={'class': 'form-control phone', 'placeholder': '0270000000'}))
+    offers = forms.ModelChoiceField(queryset=models.BigTimeBundlePrice.objects.all().order_by('price'), to_field_name='price', empty_label=None,
+                                    widget=forms.Select(attrs={'class': 'form-control airtime-input'}))
+
+    def __init__(self, status, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if status == "User":
+            self.fields['offers'].queryset = models.BigTimeBundlePrice.objects.all()
+        elif status == "Agent":
+            self.fields['offers'].queryset = models.AgentBigTimeBundlePrice.objects.all()
+        elif status == "Super Agent":
+            self.fields['offers'].queryset = models.SuperAgentBigTimeBundlePrice.objects.all()
+        # self.fields['size'].queryset = models.Size.objects.filter(domain=domain)
+
+
+class AFARegistrationForm(forms.ModelForm):
+    name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control name'}))
+    phone_number = forms.IntegerField(
+        widget=forms.NumberInput(attrs={'class': 'form-control phone', 'placeholder': '0240000000'}))
+    gh_card_number = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control card', 'placeholder': 'GHA-XXXXXXXXXXX-X'}))
+    occupation = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control occ'}))
+    date_of_birth = forms.CharField(
+        widget=forms.DateInput(attrs={'class': 'form-control birth', 'type': 'date'}))
+
+    class Meta:
+        model = models.AFARegistration
+        fields = ('name', 'phone_number', 'gh_card_number', 'occupation', 'date_of_birth')
 

@@ -384,6 +384,26 @@ def big_time_pay_with_wallet(request):
         new_mtn_transaction.save()
         user.wallet -= float(amount)
         user.save()
+        sms_headers = {
+            'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
+            'Content-Type': 'application/json'
+        }
+
+        sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+        sms_message = f"Hello,\nA Big time order has been placed.\nReference: {reference}.\nThank you"
+
+        sms_body = {
+            'recipient': f"233549914001",
+            'sender_id': 'Noble Data',
+            'message': sms_message
+        }
+        try:
+            print("tried")
+            response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+            print(response.text)
+        except:
+            print("could not send message")
+            pass
         return JsonResponse({'status': "Your transaction will be completed shortly", 'icon': 'success'})
     return redirect('big_time')
 
@@ -610,6 +630,26 @@ def afa_registration_wallet(request):
         new_registration.save()
         user.wallet -= float(price)
         user.save()
+        sms_headers = {
+            'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
+            'Content-Type': 'application/json'
+        }
+
+        sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+        sms_message = f"Hello,\nAn AFA Registration order has been placed.\nReference: {reference}.\nThank you"
+
+        sms_body = {
+            'recipient': f"233549914001",
+            'sender_id': 'Noble Data',
+            'message': sms_message
+        }
+        try:
+            print("tried")
+            response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+            print(response.text)
+        except:
+            print("could not send message")
+            pass
         return JsonResponse({'status': "Your transaction will be completed shortly", 'icon': 'success'})
     return redirect('home')
 
@@ -1361,6 +1401,26 @@ def hubtel_webhook(request):
                         reference=reference,
                     )
                     new_mtn_transaction.save()
+                    sms_headers = {
+                        'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
+                        'Content-Type': 'application/json'
+                    }
+
+                    sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+                    sms_message = f"Hello,\nA Big Time order has been placed.\nReference: {reference}.\nThank you"
+
+                    sms_body = {
+                        'recipient': f"233549914001",
+                        'sender_id': 'Noble Data',
+                        'message': sms_message
+                    }
+                    try:
+                        print("tried")
+                        response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+                        print(response.text)
+                    except:
+                        print("could not send message")
+                        pass
                     return JsonResponse({'status': "Your transaction will be completed shortly"}, status=200)
                 elif transaction_channel == "afa":
                     name = transaction_details["name"]

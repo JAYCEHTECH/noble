@@ -37,7 +37,7 @@ class AdminInfo(models.Model):
         ("AT Money", "AT Money")
     )
     payment_channel = models.CharField(max_length=250, choices=choices)
-    afa_price = models.FloatField(null=True, blank=True)
+    # afa_price = models.FloatField(null=True, blank=True)
 
 
 class BigTimeBundlePrice(models.Model):

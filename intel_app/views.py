@@ -960,7 +960,7 @@ def mark_as_sent(request, pk):
         sms_message = f"Your account has been credited with {txn.offer}.\nTransaction Reference: {txn.reference}"
 
         sms_body = {
-            'recipient': f"233{txn.bundle_number}",
+            'recipient': f"233{txn.user.phone}",
             'sender_id': 'Noble Data',
             'message': sms_message
         }
@@ -977,7 +977,7 @@ def bt_mark_as_sent(request, pk):
         txn.transaction_status = "Completed"
         txn.save()
         sms_headers = {
-            'Authorization': 'Bearer 1136|LwSl79qyzTZ9kbcf9SpGGl1ThsY0Ujf7tcMxvPze',
+            'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
             'Content-Type': 'application/json'
         }
 
@@ -986,7 +986,7 @@ def bt_mark_as_sent(request, pk):
 
         sms_body = {
             'recipient': f"233{txn.user.phone}",
-            'sender_id': 'Geosams',
+            'sender_id': 'Noble Data',
             'message': sms_message
         }
         try:
@@ -1007,7 +1007,7 @@ def afa_mark_as_sent(request, pk):
         txn.transaction_status = "Completed"
         txn.save()
         sms_headers = {
-            'Authorization': 'Bearer 1136|LwSl79qyzTZ9kbcf9SpGGl1ThsY0Ujf7tcMxvPze',
+            'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
             'Content-Type': 'application/json'
         }
 
@@ -1016,7 +1016,7 @@ def afa_mark_as_sent(request, pk):
 
         sms_body = {
             'recipient': f"233{txn.user.phone}",
-            'sender_id': 'Geosams',
+            'sender_id': 'Noble Data',
             'message': sms_message
         }
         response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)

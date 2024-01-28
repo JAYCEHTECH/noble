@@ -16,6 +16,7 @@ class CustomUser(AbstractUser):
     choices = (
         ("User", "User"),
         ("Agent", "Agent"),
+        ("Super Agent", "Super Agent")
     )
     status = models.CharField(max_length=250, null=False, blank=False, choices=choices, default="User")
     password1 = models.CharField(max_length=100, null=False, blank=False)
@@ -36,6 +37,7 @@ class AdminInfo(models.Model):
         ("AT Money", "AT Money")
     )
     payment_channel = models.CharField(max_length=250, choices=choices)
+    afa_price = models.FloatField(null=True, blank=True)
 
 
 class BigTimeBundlePrice(models.Model):

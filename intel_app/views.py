@@ -1378,6 +1378,27 @@ def hubtel_webhook(request):
                         date_of_birth=date_of_birth
                     )
                     new_afa_reg.save()
+
+                    sms_headers = {
+                        'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
+                        'Content-Type': 'application/json'
+                    }
+
+                    sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+                    sms_message = f"Hello,\nAn AFA Registration order has been placed.\nReference: {reference}.\nThank you"
+
+                    sms_body = {
+                        'recipient': f"233549914001",
+                        'sender_id': 'Noble Data',
+                        'message': sms_message
+                    }
+                    try:
+                        print("tried")
+                        response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+                        print(response.text)
+                    except:
+                        print("could not send message")
+                        pass
                     return JsonResponse({'status': "Your transaction will be completed shortly"}, status=200)
                 elif transaction_channel == "topup":
                     amount = transaction_details["topup_amount"]

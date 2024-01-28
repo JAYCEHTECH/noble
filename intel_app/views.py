@@ -1073,7 +1073,7 @@ def topup_info(request):
         url = "https://payproxyapi.hubtel.com/items/initiate"
 
         payload = json.dumps({
-            "totalAmount": amount.price,
+            "totalAmount": amount,
             "description": "Payment for AFA Registration",
             "callbackUrl": "https://www.nobledatagh.com/hubtel_webhook",
             "returnUrl": "https://www.nobledatagh.com",

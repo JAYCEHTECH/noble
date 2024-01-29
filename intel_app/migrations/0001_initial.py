@@ -43,4 +43,12 @@ class Migration(migrations.Migration):
                 ('objects', django.contrib.auth.models.UserManager()),
             ],
         ),
+        migrations.CreateModel(
+            name='Announcement',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('message', models.CharField(blank=True, max_length=500, null=True)),
+                ('active', models.BooleanField(default=True)),
+            ],
+        ),
     ]

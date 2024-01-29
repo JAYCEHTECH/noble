@@ -187,6 +187,25 @@ class AFARegistration(models.Model):
     occupation = models.CharField(max_length=20, null=False, blank=True)
     reference = models.CharField(max_length=20, null=False, blank=True)
     date_of_birth = models.DateField(null=False, blank=False)
+    GHANA_REGIONS = (
+        ("Greater Accra", "Greater Accra"),
+        ("Ashanti", "Ashanti"),
+        ("Western", "Western"),
+        ("Central", "Central"),
+        ("Eastern", "Eastern"),
+        ("Volta", "Volta"),
+        ("Northern", "Northern"),
+        ("Upper East", "Upper East"),
+        ("Upper West", "Upper West"),
+        ("Bono", "Bono"),
+        ("Bono East", "Bono East"),
+        ("Ahafo", "Ahafo"),
+        ("Savannah", "Savannah"),
+        ("North East", "North East"),
+        ("Western North", "Western North"),
+        ("Oti", "Oti"),
+    )
+    region = models.CharField(max_length=250, null=True, blank=True, choices=GHANA_REGIONS)
     choices = (
         ("Pending", "Pending"),
         ("Completed", "Completed"),

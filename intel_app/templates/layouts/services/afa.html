@@ -65,6 +65,12 @@
                   <label for="phone">Date of Birth</label>
                   {{form.date_of_birth}}
                 </div>
+                <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="phone">Region</label>
+                  {{form.region}}
+                </div>
+              </div>
               </div>
               <p class="font-weight-bold">Afa Bundle Price: GHS{{price}}</p>
               <input type="hidden" value={{email}} class="email">
@@ -177,6 +183,7 @@ $("body").on('click', '.pay-with-wallet', function(e){
     let card = $(".card").val()
     let birth = $(".birth").val()
     let occupation = $(".occ").val()
+    let region = $(".region").val()
 
     $.ajax({
       method: "POST",
@@ -189,6 +196,7 @@ $("body").on('click', '.pay-with-wallet', function(e){
             card: card,
             birth: birth,
             occupation: occupation,
+            region: region,
             csrfmiddlewaretoken: token,
       },
       success: function (response) {

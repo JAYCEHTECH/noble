@@ -82,8 +82,27 @@ class AFARegistrationForm(forms.ModelForm):
     occupation = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control occ'}))
     date_of_birth = forms.CharField(
         widget=forms.DateInput(attrs={'class': 'form-control birth', 'type': 'date'}))
+    GHANA_REGIONS = (
+        ("Greater Accra", "Greater Accra"),
+        ("Ashanti", "Ashanti"),
+        ("Western", "Western"),
+        ("Central", "Central"),
+        ("Eastern", "Eastern"),
+        ("Volta", "Volta"),
+        ("Northern", "Northern"),
+        ("Upper East", "Upper East"),
+        ("Upper West", "Upper West"),
+        ("Bono", "Bono"),
+        ("Bono East", "Bono East"),
+        ("Ahafo", "Ahafo"),
+        ("Savannah", "Savannah"),
+        ("North East", "North East"),
+        ("Western North", "Western North"),
+        ("Oti", "Oti"),
+    )
+    region = forms.CharField(widget=forms.Select(attrs={'class': 'form-control region'}, choices=GHANA_REGIONS))
 
     class Meta:
         model = models.AFARegistration
-        fields = ('name', 'phone_number', 'gh_card_number', 'occupation', 'date_of_birth')
+        fields = ('name', 'phone_number', 'gh_card_number', 'occupation', 'date_of_birth', 'region')
 

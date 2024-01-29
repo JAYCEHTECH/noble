@@ -564,6 +564,7 @@ def afa_registration(request):
                 "card": form.cleaned_data["gh_card_number"],
                 "occupation": form.cleaned_data["occupation"],
                 "date_of_birth": form.cleaned_data["date_of_birth"],
+                "region": form.cleaned_data["region"]
             }
             new_payment = models.Payment.objects.create(
                 user=request.user,
@@ -613,6 +614,7 @@ def afa_registration_wallet(request):
         card_number = request.POST.get("card")
         occupation = request.POST.get("occupation")
         date_of_birth = request.POST.get("birth")
+        region = request.POST.get("region")
         price = models.AdminInfo.objects.filter().first().afa_price
 
         if user.wallet is None:
@@ -629,7 +631,8 @@ def afa_registration_wallet(request):
             phone_number=phone_number,
             gh_card_number=card_number,
             occupation=occupation,
-            date_of_birth=date_of_birth
+            date_of_birth=date_of_birth,
+            region=region
         )
         new_registration.save()
         user.wallet -= float(price)
@@ -1432,6 +1435,7 @@ def hubtel_webhook(request):
                     gh_card_number = transaction_details["card"]
                     occupation = transaction_details["occupation"]
                     date_of_birth = transaction_details["date_of_birth"]
+                    region = transaction_details["region"]
 
                     new_afa_reg = models.AFARegistration.objects.create(
                         user=user,
@@ -1440,7 +1444,8 @@ def hubtel_webhook(request):
                         name=name,
                         occupation=occupation,
                         reference=reference,
-                        date_of_birth=date_of_birth
+                        date_of_birth=date_of_birth,
+                        region=region
                     )
                     new_afa_reg.save()
 

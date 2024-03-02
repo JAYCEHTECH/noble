@@ -1299,7 +1299,7 @@ def hubtel_webhook(request):
                             print(user.phone)
                             print("***********")
                             receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {user.phone}.\nReference: {reference}\n"
-                            sms_message = f"Hello @{user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {reference}\nThank you for using Data4All GH.\n\nThe Data4All GH"
+                            sms_message = f"Hello @{user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {reference}\nThank you for using Noble Data.\n\nThe Noble Data"
 
                             sms_body = {
                                 'recipient': f"233{user.phone}",
@@ -1318,7 +1318,7 @@ def hubtel_webhook(request):
                                 reference=reference)
                             transaction_to_be_updated.transaction_status = "Failed"
                             new_transaction.save()
-                            sms_message = f"Hello @{user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {phone_number}.\nReference: {reference}\nThank you for using Data4All GH.\n\nThe Data4All GH"
+                            sms_message = f"Hello @{user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {phone_number}.\nReference: {reference}\nThank you for using Noble Data.\n\nThe Noble Data"
 
                             sms_body = {
                                 'recipient': f"233{user.phone}",
@@ -1331,7 +1331,7 @@ def hubtel_webhook(request):
                             reference=reference)
                         transaction_to_be_updated.transaction_status = "Failed"
                         new_transaction.save()
-                        sms_message = f"Hello @{user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {phone_number}.\nReference: {payment_reference}\nThank you for using Data4All GH.\n\nThe Data4All GH"
+                        sms_message = f"Hello @{user.username}. Something went wrong with your transaction. Contact us for enquiries.\nBundle: {bundle}MB\nPhone Number: {phone_number}.\nReference: {payment_reference}\nThank you for using Noble Data.\n\nThe Noble Data"
 
                         sms_body = {
                             'recipient': f'233{user.phone}',

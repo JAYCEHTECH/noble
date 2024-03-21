@@ -41,7 +41,7 @@
                             {% endif %}
                             <td>{{request.date}}</td>
                             <td>{{request.credited_at}}</td>
-                            <td><a href="" class="badge badge-success">Credit</a></td>
+                            <td><a href="{% url 'credit' reference=request.reference %}" class="badge badge-success">Credit</a></td>
                         </tr>
                     {% endfor %}
                     </tbody>

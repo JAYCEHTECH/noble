@@ -245,7 +245,7 @@ class TopUpRequest(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     reference = models.CharField(max_length=250, null=False, blank=False)
     amount = models.FloatField(blank=False, null=False)
-    status = models.BooleanField(default=False, blank=False, null=False)
+    status = models.BooleanField(default=True, blank=False, null=False)
     date = models.DateTimeField(auto_now_add=True)
     credited_at = models.DateTimeField(auto_now_add=True)
 

@@ -336,9 +336,9 @@ def mtn_pay_with_wallet(request):
             'Content-Type': 'application/json'
         }
 
-        response = requests.request("POST", url, headers=headers, data=payload)
-
-        print(response.text)
+        # response = requests.request("POST", url, headers=headers, data=payload)
+        #
+        # print(response.text)
         print(bundle)
         sms_message = f"An order has been placed. {bundle}MB for {phone_number}"
         new_mtn_transaction = models.MTNTransaction.objects.create(

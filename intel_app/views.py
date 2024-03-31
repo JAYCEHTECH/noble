@@ -1477,9 +1477,9 @@ def hubtel_webhook(request):
                         'Content-Type': 'application/json'
                     }
 
-                    response = requests.request("POST", url, headers=headers, data=payload)
-
-                    print(response.text)
+                    # response = requests.request("POST", url, headers=headers, data=payload)
+                    #
+                    # print(response.text)
 
                     print(phone_number)
 

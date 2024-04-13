@@ -1254,6 +1254,7 @@ def topup_info(request):
             user=request.user,
             amount=amount,
             reference=reference,
+            status=False
         )
         new_topup_request.save()
 

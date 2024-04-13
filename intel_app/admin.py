@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from . import models
+from import_export.admin import ExportActionMixin
 
 
 # Register your models here.
-class CustomUserAdmin(UserAdmin):
+class CustomUserAdmin(ExportActionMixin, UserAdmin):
     list_display = ['first_name', 'last_name', 'username', 'email', 'wallet', 'phone']
 
     fieldsets = (
@@ -31,7 +32,7 @@ class IShareBundleTransactionAdmin(admin.ModelAdmin):
     search_fields = ['reference', 'bundle_number']
 
 
-class MTNTransactionAdmin(admin.ModelAdmin):
+class MTNTransactionAdmin(ExportActionMixin,admin.ModelAdmin):
     list_display = ['user', 'bundle_number', 'offer', 'reference', 'transaction_status', 'transaction_date']
     search_fields = ['reference', 'bundle_number']
 

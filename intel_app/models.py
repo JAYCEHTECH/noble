@@ -43,6 +43,7 @@ class AdminInfo(models.Model):
 class BigTimeBundlePrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     bundle_volume = models.FloatField(null=False, blank=False)
+    purchase_price = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         if self.bundle_volume >= 1000:
@@ -86,6 +87,7 @@ class IShareBundleTransaction(models.Model):
 class IshareBundlePrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     bundle_volume = models.FloatField(null=False, blank=False)
+    purchase_price = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         if self.bundle_volume >= 1000:
@@ -135,6 +137,7 @@ class MTNTransaction(models.Model):
 class MTNBundlePrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     bundle_volume = models.FloatField(null=False, blank=False)
+    purchase_price = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         if self.bundle_volume >= 1000:
@@ -256,3 +259,16 @@ class Announcement(models.Model):
 
     def __str__(self):
         return self.message
+
+
+class ProfitInstance(models.Model):
+    selling_price_total = models.FloatField(null=False, blank=False)
+    purchase_price_total = models.FloatField(null=False, blank=False)
+    profit = models.FloatField(null=False, blank=False)
+    date_and_time = models.DateTimeField(auto_now_add=True)
+    choices = (
+        ("MTN", "MTN"),
+        ("AT", "AT"),
+        ("BigTime", "BigTime"),
+    )
+    channel = models.CharField(max_length=250, null=False, blank=False)

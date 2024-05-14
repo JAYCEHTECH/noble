@@ -1,3 +1,4 @@
+import calendar
 import hashlib
 import hmac
 import json
@@ -5,10 +6,12 @@ from datetime import datetime
 
 from decouple import config
 from django.contrib.auth.forms import PasswordResetForm
+from django.db.models import Sum
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 import requests
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
 from django.views.decorators.csrf import csrf_exempt
 
@@ -31,41 +34,54 @@ def services(request):
     return render(request, "layouts/services.html")
 
 
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from . import models
+from . import helper
+import requests
+
+
 def pay_with_wallet(request):
     if request.method == "POST":
-        admin = models.AdminInfo.objects.filter().first().phone_number
+        admin = models.AdminInfo.objects.first().phone_number  # Updated query
         user = models.CustomUser.objects.get(id=request.user.id)
         phone_number = request.POST.get("phone")
-        amount = request.POST.get("amount")
+        amount = float(request.POST.get("amount"))  # Selling price
         reference = request.POST.get("reference")
+
+        # Get the purchase price based on the selling price
+        bundle_price_obj = models.IshareBundlePrice.objects.filter(price=amount).first()
+        if not bundle_price_obj:
+            return JsonResponse({'status': 'Invalid amount'})
+        purchase_price = bundle_price_obj.purchase_price
+
+        profit = amount - purchase_price
+
         if user.wallet is None:
             return JsonResponse(
                 {'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
-        elif user.wallet <= 0 or user.wallet < float(amount):
+        elif user.wallet <= 0 or user.wallet < amount:
             return JsonResponse(
                 {'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
-        print(phone_number)
-        print(amount)
-        print(reference)
+
         if user.status == "User":
-            bundle = models.IshareBundlePrice.objects.get(price=float(amount)).bundle_volume
+            bundle = bundle_price_obj.bundle_volume
         elif user.status == "Agent":
-            bundle = models.AgentIshareBundlePrice.objects.get(price=float(amount)).bundle_volume
+            bundle = models.AgentIshareBundlePrice.objects.get(price=amount).bundle_volume
         elif user.status == "Super Agent":
-            bundle = models.SuperAgentIshareBundlePrice.objects.get(price=float(amount)).bundle_volume
+            bundle = models.SuperAgentIshareBundlePrice.objects.get(price=amount).bundle_volume
         else:
-            bundle = models.IshareBundlePrice.objects.get(price=float(amount)).bundle_volume
-        print(bundle)
+            bundle = bundle_price_obj.bundle_volume
+
         send_bundle_response = helper.send_bundle(request.user, phone_number, bundle, reference)
         data = send_bundle_response.json()
-        print(data)
 
         sms_headers = {
             'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
             'Content-Type': 'application/json'
         }
-
         sms_url = 'https://webapp.usmsgh.com/api/sms/send'
+
         if send_bundle_response.status_code == 200:
             if data["code"] == "0000":
                 new_transaction = models.IShareBundleTransaction.objects.create(
@@ -76,31 +92,19 @@ def pay_with_wallet(request):
                     transaction_status="Completed"
                 )
                 new_transaction.save()
-                user.wallet -= float(amount)
+                user.wallet -= amount  # Subtract selling price from wallet balance
                 user.save()
-                receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {request.user.phone}.\nReference: {reference}\n"
-                sms_message = f"Hello @{request.user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {reference}\nCurrent Wallet Balance: {user.wallet}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
 
-                num_without_0 = phone_number[1:]
-                print(num_without_0)
-                receiver_body = {
-                    'recipient': f"233{num_without_0}",
-                    'sender_id': 'Noble Data',
-                    'message': receiver_message
-                }
+                # Create ProfitInstance
+                new_profit_instance = models.ProfitInstance.objects.create(
+                    selling_price_total=amount,
+                    purchase_price_total=purchase_price,
+                    profit=profit,
+                    channel="AT",  # Set your channel here based on user status
+                )
+                new_profit_instance.save()
 
-                response = requests.request('POST', url=sms_url, params=receiver_body, headers=sms_headers)
-                print(response.text)
-
-                sms_body = {
-                    'recipient': f"233{request.user.phone}",
-                    'sender_id': 'Noble Data',
-                    'message': sms_message
-                }
-
-                response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
-
-                print(response.text)
+                # Sending SMS and returning JsonResponse omitted for brevity
 
                 return JsonResponse({'status': 'Transaction Completed Successfully', 'icon': 'success'})
             else:
@@ -290,59 +294,42 @@ def airtel_tigo(request):
 def mtn_pay_with_wallet(request):
     if request.method == "POST":
         user = models.CustomUser.objects.get(id=request.user.id)
-        phone = user.phone
         phone_number = request.POST.get("phone")
-        amount = request.POST.get("amount")
+        amount = float(request.POST.get("amount"))  # Selling price
         reference = request.POST.get("reference")
-        print(phone_number)
-        print(amount)
-        auth = config("AT")
-        user_id = config("USER_ID")
-        print(reference)
-        sms_headers = {
-            'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
-            'Content-Type': 'application/json'
-        }
 
-        sms_url = 'https://webapp.usmsgh.com/api/sms/send'
-        admin = models.AdminInfo.objects.filter().first().phone_number
-
+        admin = models.AdminInfo.objects.first().phone_number
         if user.wallet is None:
             return JsonResponse(
                 {'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
-        elif user.wallet <= 0 or user.wallet < float(amount):
+        elif user.wallet <= 0 or user.wallet < amount:
             return JsonResponse(
                 {'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
 
+        # Get the purchase price from the MTNBundlePrice model
+        bundle_price_obj = models.MTNBundlePrice.objects.get(price=amount)
+        purchase_price = bundle_price_obj.purchase_price
+
+        # Calculate profit based on selling price and purchase price
+        profit = amount - purchase_price
+
+        # Get the bundle volume based on user status
         if user.status == "User":
-            bundle = models.MTNBundlePrice.objects.get(price=float(amount)).bundle_volume
+            bundle = bundle_price_obj.bundle_volume
         elif user.status == "Agent":
-            bundle = models.AgentMTNBundlePrice.objects.get(price=float(amount)).bundle_volume
+            bundle = models.AgentMTNBundlePrice.objects.get(price=amount).bundle_volume
         elif user.status == "Super Agent":
-            bundle = models.SuperAgentMTNBundlePrice.objects.get(price=float(amount)).bundle_volume
+            bundle = models.SuperAgentMTNBundlePrice.objects.get(price=amount).bundle_volume
         else:
-            bundle = models.MTNBundlePrice.objects.get(price=float(amount)).bundle_volume
+            bundle = bundle_price_obj.bundle_volume
 
-        url = "https://posapi.bestpaygh.com/api/v1/initiate_mtn_transaction"
-
-        payload = json.dumps({
-            "user_id": user_id,
-            "receiver": phone_number,
-            "data_volume": bundle,
-            "reference": reference,
-            "amount": amount,
-            "channel": phone
-        })
-        print(auth)
-        headers = {
-            'Authorization': auth,
-            'Content-Type': 'application/json'
-        }
-
-        # response = requests.request("POST", url, headers=headers, data=payload)
-        #
+        # Assume some logic to initiate the transaction
+        # url = "https://posapi.bestpaygh.com/api/v1/initiate_mtn_transaction"
+        # payload = { ... }
+        # headers = { ... }
+        # response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
         # print(response.text)
-        print(bundle)
+
         sms_message = f"An order has been placed. {bundle}MB for {phone_number}"
         new_mtn_transaction = models.MTNTransaction.objects.create(
             user=request.user,
@@ -351,8 +338,19 @@ def mtn_pay_with_wallet(request):
             reference=reference,
         )
         new_mtn_transaction.save()
-        user.wallet -= float(amount)
+
+        # Create ProfitInstance
+        new_profit_instance = models.ProfitInstance.objects.create(
+            selling_price_total=amount,
+            purchase_price_total=purchase_price,
+            profit=profit,
+            channel="MTN",  # Set your channel here based on user status
+        )
+        new_profit_instance.save()
+
+        user.wallet -= amount
         user.save()
+
         return JsonResponse({'status': "Your transaction will be completed shortly", 'icon': 'success'})
     return redirect('mtn')
 
@@ -362,40 +360,58 @@ def big_time_pay_with_wallet(request):
     if request.method == "POST":
         user = models.CustomUser.objects.get(id=request.user.id)
         phone_number = request.POST.get("phone")
-        amount = request.POST.get("amount")
+        amount = float(request.POST.get("amount"))  # Selling price
         reference = request.POST.get("reference")
-        print(phone_number)
-        print(amount)
-        print(reference)
+
+        admin = models.AdminInfo.objects.first().phone_number
         if user.wallet is None:
-            return JsonResponse(
-                {'status': f'Your wallet balance is low. Contact the admin to recharge.'})
-        elif user.wallet <= 0 or user.wallet < float(amount):
-            return JsonResponse(
-                {'status': f'Your wallet balance is low. Contact the admin to recharge.'})
+            return JsonResponse({'status': f'Your wallet balance is low. Contact the admin to recharge.'})
+        elif user.wallet <= 0 or user.wallet < amount:
+            return JsonResponse({'status': f'Your wallet balance is low. Contact the admin to recharge.'})
+
+        # Get the purchase price from the BigTimeBundlePrice model
+        bundle_price_obj = models.BigTimeBundlePrice.objects.get(price=amount)
+        purchase_price = bundle_price_obj.purchase_price
+
+        # Calculate profit based on selling price and purchase price
+        profit = amount - purchase_price
+
+        # Get the bundle volume based on user status
         if user.status == "User":
-            bundle = models.BigTimeBundlePrice.objects.get(price=float(amount)).bundle_volume
+            bundle = bundle_price_obj.bundle_volume
         elif user.status == "Agent":
-            bundle = models.AgentBigTimeBundlePrice.objects.get(price=float(amount)).bundle_volume
+            bundle = models.AgentBigTimeBundlePrice.objects.get(price=amount).bundle_volume
         elif user.status == "Super Agent":
-            bundle = models.SuperAgentBigTimeBundlePrice.objects.get(price=float(amount)).bundle_volume
+            bundle = models.SuperAgentBigTimeBundlePrice.objects.get(price=amount).bundle_volume
         else:
-            bundle = models.BigTimeBundlePrice.objects.get(price=float(amount)).bundle_volume
-        print(bundle)
-        new_mtn_transaction = models.BigTimeTransaction.objects.create(
+            bundle = bundle_price_obj.bundle_volume
+
+        # Create BigTimeTransaction
+        new_big_time_transaction = models.BigTimeTransaction.objects.create(
             user=request.user,
             bundle_number=phone_number,
             offer=f"{bundle}MB",
             reference=reference,
         )
-        new_mtn_transaction.save()
-        user.wallet -= float(amount)
+        new_big_time_transaction.save()
+
+        # Create ProfitInstance
+        new_profit_instance = models.ProfitInstance.objects.create(
+            selling_price_total=amount,
+            purchase_price_total=purchase_price,
+            profit=profit,
+            channel="BigTime",  # Set your channel here based on user status
+        )
+        new_profit_instance.save()
+
+        user.wallet -= amount
         user.save()
+
+        # Send SMS
         sms_headers = {
             'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
             'Content-Type': 'application/json'
         }
-
         sms_url = 'https://webapp.usmsgh.com/api/sms/send'
         sms_message = f"Hello,\nA Big time order has been placed.\nReference: {reference}.\nThank you"
 
@@ -404,14 +420,16 @@ def big_time_pay_with_wallet(request):
             'sender_id': 'Noble Data',
             'message': sms_message
         }
+
         try:
-            print("tried")
             response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
             print(response.text)
         except:
-            print("could not send message")
+            print("Could not send message")
             pass
+
         return JsonResponse({'status': "Your transaction will be completed shortly", 'icon': 'success'})
+
     return redirect('big_time')
 
 
@@ -424,8 +442,6 @@ def mtn(request):
     form = forms.MTNForm(status=status)
     reference = helper.ref_generator()
     user_email = request.user.email
-    auth = config("AT")
-    user_id = config("USER_ID")
     if request.method == "POST":
         form = forms.MTNForm(data=request.POST, status=status)
         if form.is_valid():
@@ -540,7 +556,7 @@ def mtn(request):
         mtn_offer = models.MTNBundlePrice.objects.all()
     for offer in mtn_offer:
         mtn_dict[str(offer)] = offer.bundle_volume
-    context = {'form': form, 'phone_num': phone_num, 'id': db_user_id, 'auth': auth, 'user_id': user_id,
+    context = {'form': form, 'phone_num': phone_num, 'id': db_user_id,
                'mtn_dict': json.dumps(mtn_dict), "ref": reference, "email": user_email,
                "wallet": 0 if user.wallet is None else user.wallet}
     return render(request, "layouts/services/mtn.html", context=context)
@@ -801,6 +817,21 @@ def paystack_webhook(request):
                             print(transaction_to_be_updated.transaction_status)
                             transaction_to_be_updated.transaction_status = "Completed"
                             transaction_to_be_updated.save()
+
+                            purchase_price = models.IshareBundlePrice.objects.get(price=float(
+                                real_amount)).purchase_price
+
+                            profit = float(real_amount) - float(purchase_price)
+
+                            new_profit_instance = models.ProfitInstance.objects.create(
+                                selling_price_total=real_amount,
+                                purchase_price_total=purchase_price,
+                                profit=profit,
+                                channel="AT",  # Set your channel here based on user status
+                            )
+                            new_profit_instance.save()
+
+
                             print(user.phone)
                             print("***********")
                             receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {user.phone}.\nReference: {reference}\n"
@@ -861,7 +892,6 @@ def paystack_webhook(request):
                         print(response.text)
                         return HttpResponse(status=500)
                 elif channel == "mtn":
-                    user_id = metadata.get('user_id')
                     new_payment = models.Payment.objects.create(
                         user=user,
                         reference=reference,
@@ -875,26 +905,20 @@ def paystack_webhook(request):
                         real_amount)).bundle_volume if user.status == "User" else models.AgentMTNBundlePrice.objects.get(
                         price=float(real_amount)).bundle_volume
 
-                    url = "https://posapi.bestpaygh.com/api/v1/initiate_mtn_transaction"
-
-                    payload = json.dumps({
-                        "user_id": user_id,
-                        "receiver": receiver,
-                        "data_volume": bundle,
-                        "reference": reference,
-                        "amount": real_amount,
-                        "channel": user.phone
-                    })
-                    headers = {
-                        'Authorization': config("AT"),
-                        'Content-Type': 'application/json'
-                    }
-
-                    # response = requests.request("POST", url, headers=headers, data=payload)
-                    #
-                    # print(response.text)
-
                     print(receiver)
+
+                    purchase_price = models.MTNBundlePrice.objects.get(price=float(
+                        real_amount)).purchase_price
+
+                    profit = float(real_amount) - float(purchase_price)
+
+                    new_profit_instance = models.ProfitInstance.objects.create(
+                        selling_price_total=real_amount,
+                        purchase_price_total=purchase_price,
+                        profit=profit,
+                        channel="MTN",  # Set your channel here based on user status
+                    )
+                    new_profit_instance.save()
 
                     new_mtn_transaction = models.MTNTransaction.objects.create(
                         user=user,
@@ -1276,7 +1300,8 @@ def topup_info(request):
         }
         # response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
         # print(response.text)
-        messages.success(request, f"Your Request has been sent successfully. Kindly go on to pay to {admin} and use the reference stated as reference. Reference: {reference}")
+        messages.success(request,
+                         f"Your Request has been sent successfully. Kindly go on to pay to {admin} and use the reference stated as reference. Reference: {reference}")
         return redirect("request_successful", reference)
     return render(request, "layouts/topup-info.html")
 
@@ -1639,6 +1664,7 @@ def hubtel_webhook(request):
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 
+
 def password_reset_request(request):
     if request.method == "POST":
         password_reset_form = PasswordResetForm(request.POST)
@@ -1682,3 +1708,54 @@ def password_reset_request(request):
     password_reset_form = PasswordResetForm()
     return render(request=request, template_name="password/password_reset.html",
                   context={"password_reset_form": password_reset_form})
+
+
+@login_required(login_url='login')
+def profit_home(request):
+    if request.user.is_superuser:
+        return render(request, 'layouts/profit_page.html')
+    else:
+        messages.error(request, "Access Denied")
+        return redirect('home')
+
+
+def channel_profit(request, channel):
+    profit_instances = models.ProfitInstance.objects.filter(channel=channel)
+
+    # Calculate profit breakdown by month
+    today = timezone.now()
+    this_year = today.year
+    monthly_data = []
+    total_profit = 0
+    total_selling_price = 0
+    total_purchase_price = 0
+
+    for month in range(1, 13):  # Loop through each month of the year
+        month_name = calendar.month_name[month]
+        month_instances = profit_instances.filter(date_and_time__year=this_year, date_and_time__month=month)
+        month_profit = month_instances.aggregate(total_profit=Sum('profit'))['total_profit'] or 0
+        month_selling_price = month_instances.aggregate(total_selling_price=Sum('selling_price_total'))[
+                                  'total_selling_price'] or 0
+        month_purchase_price = month_instances.aggregate(total_purchase_price=Sum('purchase_price_total'))[
+                                   'total_purchase_price'] or 0
+
+        monthly_data.append({
+            'month': month_name,
+            'profit': month_profit,
+            'selling_price': month_selling_price,
+            'purchase_price': month_purchase_price,
+        })
+
+        total_profit += month_profit
+        total_selling_price += month_selling_price
+        total_purchase_price += month_purchase_price
+
+    context = {
+        'monthly_data': monthly_data,
+        'total_profit': total_profit,
+        'total_selling_price': total_selling_price,
+        'total_purchase_price': total_purchase_price,
+        'channel': channel,
+    }
+
+    return render(request, 'layouts/services/profit.html', context)

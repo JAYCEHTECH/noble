@@ -45,5 +45,8 @@ urlpatterns = [
 
     path("password_reset/", views.password_reset_request, name="password_reset"),
 
+    path('elevated/profit_calculator', views.profit_home, name='profit_home'),
+    path('elevated/profit/<str:channel>', views.channel_profit, name='channel_profit'),
+
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

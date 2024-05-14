@@ -36,18 +36,18 @@
                     <thead>
                         <tr>
                             <th>Month</th>
-                            <th>Profit</th>
                             <th>Selling Price</th>
                             <th>Purchase Price</th>
+                            <th>Profit</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for data in monthly_data %}
                         <tr>
                             <td>{{ data.month }}</td>
-                            <td>{{ data.profit }}</td>
                             <td>{{ data.selling_price }}</td>
                             <td>{{ data.purchase_price }}</td>
+                            <td>{{ data.profit }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>

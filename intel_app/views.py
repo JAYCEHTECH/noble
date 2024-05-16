@@ -791,7 +791,7 @@ def paystack_webhook(request):
                 print(f"reeeeeeeaaaaaaaaal amount: {rounded_real_amount}")
                 print(f"paaaaaaaaaaaaaiiddd amount: {rounded_paid_amount}")
 
-                is_within_range = (rounded_real_amount - 5) <= rounded_paid_amount <= (rounded_real_amount + 5)
+                is_within_range = (rounded_real_amount - 3) <= rounded_paid_amount <= (rounded_real_amount + 3)
 
                 if not is_within_range:
                     sms_headers = {
@@ -935,9 +935,14 @@ def paystack_webhook(request):
                     )
                     new_payment.save()
 
-                    bundle = models.MTNBundlePrice.objects.get(price=float(
-                        real_amount)).bundle_volume if user.status == "User" else models.AgentMTNBundlePrice.objects.get(
-                        price=float(real_amount)).bundle_volume
+                    if user.status == "User":
+                        bundle = models.BigTimeBundlePrice.objects.get(price=float(real_amount)).bundle_volume
+                    elif user.status == "Agent":
+                        bundle = models.AgentBigTimeBundlePrice.objects.get(price=float(real_amount)).bundle_volume
+                    elif user.status == "Super Agent":
+                        bundle = models.SuperAgentBigTimeBundlePrice.objects.get(price=float(real_amount)).bundle_volume
+                    else:
+                        bundle = models.BigTimeBundlePrice.objects.get(price=float(real_amount)).bundle_volume
 
                     print(receiver)
 

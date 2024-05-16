@@ -939,8 +939,6 @@ def paystack_webhook(request):
                         bundle = models.BigTimeBundlePrice.objects.get(price=float(real_amount)).bundle_volume
                     elif user.status == "Agent":
                         bundle = models.AgentBigTimeBundlePrice.objects.get(price=float(real_amount)).bundle_volume
-                    elif user.status == "Super Agent":
-                        bundle = models.SuperAgentBigTimeBundlePrice.objects.get(price=float(real_amount)).bundle_volume
                     else:
                         bundle = models.BigTimeBundlePrice.objects.get(price=float(real_amount)).bundle_volume
 

@@ -50,12 +50,12 @@ def pay_with_wallet(request):
         reference = request.POST.get("reference")
 
         # Get the purchase price based on the selling price
-        bundle_price_obj = models.IshareBundlePrice.objects.filter(price=amount).first()
-        if not bundle_price_obj:
-            return JsonResponse({'status': 'Invalid amount'})
-        purchase_price = bundle_price_obj.purchase_price
-
-        profit = amount - purchase_price
+        # bundle_price_obj = models.IshareBundlePrice.objects.filter(price=amount).first()
+        # if not bundle_price_obj:
+        #     return JsonResponse({'status': 'Invalid amount'})
+        # purchase_price = bundle_price_obj.purchase_price
+        #
+        # profit = amount - purchase_price
 
         if user.wallet is None:
             return JsonResponse(
@@ -65,13 +65,13 @@ def pay_with_wallet(request):
                 {'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
 
         if user.status == "User":
-            bundle = bundle_price_obj.bundle_volume
+            bundle = models.IshareBundlePrice.objects.get(price=amount).bundle_volume
         elif user.status == "Agent":
             bundle = models.AgentIshareBundlePrice.objects.get(price=amount).bundle_volume
         elif user.status == "Super Agent":
             bundle = models.SuperAgentIshareBundlePrice.objects.get(price=amount).bundle_volume
         else:
-            bundle = bundle_price_obj.bundle_volume
+            bundle = models.IshareBundlePrice.objects.get(price=amount).bundle_volume
 
         send_bundle_response = helper.send_bundle(request.user, phone_number, bundle, reference)
         data = send_bundle_response.json()
@@ -96,13 +96,13 @@ def pay_with_wallet(request):
                 user.save()
 
                 # Create ProfitInstance
-                new_profit_instance = models.ProfitInstance.objects.create(
-                    selling_price_total=amount,
-                    purchase_price_total=purchase_price,
-                    profit=profit,
-                    channel="AT",  # Set your channel here based on user status
-                )
-                new_profit_instance.save()
+                # new_profit_instance = models.ProfitInstance.objects.create(
+                #     selling_price_total=amount,
+                #     purchase_price_total=purchase_price,
+                #     profit=profit,
+                #     channel="AT",  # Set your channel here based on user status
+                # )
+                # new_profit_instance.save()
 
                 # Sending SMS and returning JsonResponse omitted for brevity
 
@@ -307,21 +307,21 @@ def mtn_pay_with_wallet(request):
                 {'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
 
         # Get the purchase price from the MTNBundlePrice model
-        bundle_price_obj = models.MTNBundlePrice.objects.get(price=amount)
-        purchase_price = bundle_price_obj.purchase_price
-
-        # Calculate profit based on selling price and purchase price
-        profit = amount - purchase_price
+        # bundle_price_obj = models.MTNBundlePrice.objects.get(price=amount)
+        # purchase_price = bundle_price_obj.purchase_price
+        #
+        # # Calculate profit based on selling price and purchase price
+        # profit = amount - purchase_price
 
         # Get the bundle volume based on user status
         if user.status == "User":
-            bundle = bundle_price_obj.bundle_volume
+            bundle = models.MTNBundlePrice.objects.get(price=amount).bundle_volume
         elif user.status == "Agent":
             bundle = models.AgentMTNBundlePrice.objects.get(price=amount).bundle_volume
         elif user.status == "Super Agent":
             bundle = models.SuperAgentMTNBundlePrice.objects.get(price=amount).bundle_volume
         else:
-            bundle = bundle_price_obj.bundle_volume
+            bundle = models.MTNBundlePrice.objects.get(price=amount).bundle_volume
 
         # Assume some logic to initiate the transaction
         # url = "https://posapi.bestpaygh.com/api/v1/initiate_mtn_transaction"
@@ -340,13 +340,13 @@ def mtn_pay_with_wallet(request):
         new_mtn_transaction.save()
 
         # Create ProfitInstance
-        new_profit_instance = models.ProfitInstance.objects.create(
-            selling_price_total=amount,
-            purchase_price_total=purchase_price,
-            profit=profit,
-            channel="MTN",  # Set your channel here based on user status
-        )
-        new_profit_instance.save()
+        # new_profit_instance = models.ProfitInstance.objects.create(
+        #     selling_price_total=amount,
+        #     purchase_price_total=purchase_price,
+        #     profit=profit,
+        #     channel="MTN",  # Set your channel here based on user status
+        # )
+        # new_profit_instance.save()
 
         user.wallet -= amount
         user.save()
@@ -370,21 +370,21 @@ def big_time_pay_with_wallet(request):
             return JsonResponse({'status': f'Your wallet balance is low. Contact the admin to recharge.'})
 
         # Get the purchase price from the BigTimeBundlePrice model
-        bundle_price_obj = models.BigTimeBundlePrice.objects.get(price=amount)
-        purchase_price = bundle_price_obj.purchase_price
-
-        # Calculate profit based on selling price and purchase price
-        profit = amount - purchase_price
+        # bundle_price_obj = models.BigTimeBundlePrice.objects.get(price=amount)
+        # purchase_price = bundle_price_obj.purchase_price
+        #
+        # # Calculate profit based on selling price and purchase price
+        # profit = amount - purchase_price
 
         # Get the bundle volume based on user status
         if user.status == "User":
-            bundle = bundle_price_obj.bundle_volume
+            bundle = models.BigTimeBundlePrice.objects.get(price=amount).bundle_volume
         elif user.status == "Agent":
             bundle = models.AgentBigTimeBundlePrice.objects.get(price=amount).bundle_volume
         elif user.status == "Super Agent":
             bundle = models.SuperAgentBigTimeBundlePrice.objects.get(price=amount).bundle_volume
         else:
-            bundle = bundle_price_obj.bundle_volume
+            bundle = models.BigTimeBundlePrice.objects.get(price=amount).bundle_volume
 
         # Create BigTimeTransaction
         new_big_time_transaction = models.BigTimeTransaction.objects.create(
@@ -396,13 +396,13 @@ def big_time_pay_with_wallet(request):
         new_big_time_transaction.save()
 
         # Create ProfitInstance
-        new_profit_instance = models.ProfitInstance.objects.create(
-            selling_price_total=amount,
-            purchase_price_total=purchase_price,
-            profit=profit,
-            channel="BigTime",  # Set your channel here based on user status
-        )
-        new_profit_instance.save()
+        # new_profit_instance = models.ProfitInstance.objects.create(
+        #     selling_price_total=amount,
+        #     purchase_price_total=purchase_price,
+        #     profit=profit,
+        #     channel="BigTime",  # Set your channel here based on user status
+        # )
+        # new_profit_instance.save()
 
         user.wallet -= amount
         user.save()
@@ -852,18 +852,18 @@ def paystack_webhook(request):
                             transaction_to_be_updated.transaction_status = "Completed"
                             transaction_to_be_updated.save()
 
-                            purchase_price = models.IshareBundlePrice.objects.get(price=float(
-                                real_amount)).purchase_price
+                            # purchase_price = models.IshareBundlePrice.objects.get(price=float(
+                            #     real_amount)).purchase_price
+                            #
+                            # profit = float(real_amount) - float(purchase_price)
 
-                            profit = float(real_amount) - float(purchase_price)
-
-                            new_profit_instance = models.ProfitInstance.objects.create(
-                                selling_price_total=real_amount,
-                                purchase_price_total=purchase_price,
-                                profit=profit,
-                                channel="AT",  # Set your channel here based on user status
-                            )
-                            new_profit_instance.save()
+                            # new_profit_instance = models.ProfitInstance.objects.create(
+                            #     selling_price_total=real_amount,
+                            #     purchase_price_total=purchase_price,
+                            #     profit=profit,
+                            #     channel="AT",  # Set your channel here based on user status
+                            # )
+                            # new_profit_instance.save()
 
 
                             print(user.phone)
@@ -941,18 +941,18 @@ def paystack_webhook(request):
 
                     print(receiver)
 
-                    purchase_price = models.MTNBundlePrice.objects.get(price=float(
-                        real_amount)).purchase_price
-
-                    profit = float(real_amount) - float(purchase_price)
-
-                    new_profit_instance = models.ProfitInstance.objects.create(
-                        selling_price_total=real_amount,
-                        purchase_price_total=purchase_price,
-                        profit=profit,
-                        channel="MTN",  # Set your channel here based on user status
-                    )
-                    new_profit_instance.save()
+                    # purchase_price = models.MTNBundlePrice.objects.get(price=float(
+                    #     real_amount)).purchase_price
+                    #
+                    # profit = float(real_amount) - float(purchase_price)
+                    #
+                    # new_profit_instance = models.ProfitInstance.objects.create(
+                    #     selling_price_total=real_amount,
+                    #     purchase_price_total=purchase_price,
+                    #     profit=profit,
+                    #     channel="MTN",  # Set your channel here based on user status
+                    # )
+                    # new_profit_instance.save()
 
                     new_mtn_transaction = models.MTNTransaction.objects.create(
                         user=user,

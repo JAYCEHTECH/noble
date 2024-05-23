@@ -49,14 +49,6 @@ def pay_with_wallet(request):
         amount = float(request.POST.get("amount"))  # Selling price
         reference = request.POST.get("reference")
 
-        # Get the purchase price based on the selling price
-        # bundle_price_obj = models.IshareBundlePrice.objects.filter(price=amount).first()
-        # if not bundle_price_obj:
-        #     return JsonResponse({'status': 'Invalid amount'})
-        # purchase_price = bundle_price_obj.purchase_price
-        #
-        # profit = amount - purchase_price
-
         if user.wallet is None:
             return JsonResponse(
                 {'status': f'Your wallet balance is low. Contact the admin to recharge. Admin Contact Info: 0{admin}'})
@@ -95,16 +87,33 @@ def pay_with_wallet(request):
                 user.wallet -= amount  # Subtract selling price from wallet balance
                 user.save()
 
-                # Create ProfitInstance
-                # new_profit_instance = models.ProfitInstance.objects.create(
-                #     selling_price_total=amount,
-                #     purchase_price_total=purchase_price,
-                #     profit=profit,
-                #     channel="AT",  # Set your channel here based on user status
-                # )
-                # new_profit_instance.save()
+                # Get the purchase price based on the selling price
+                bundle_price_obj = bundle
+                if not bundle_price_obj:
+                    return JsonResponse({'status': 'Invalid amount'})
+                purchase_price = bundle_price_obj.purchase_price
 
-                # Sending SMS and returning JsonResponse omitted for brevity
+                profit = amount - purchase_price
+
+                # Create ProfitInstance
+                new_profit_instance = models.ProfitInstance.objects.create(
+                    selling_price_total=amount,
+                    purchase_price_total=purchase_price,
+                    profit=profit,
+                    channel="AT",  # Set your channel here based on user status
+                )
+                new_profit_instance.save()
+
+                receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {request.user.phone}.\nReference: {reference}\n"
+                sms_message = f"Hello @{request.user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {reference}\nCurrent Wallet Balance: {user.wallet}\nThank you for using Noble Data."
+
+                response1 = requests.get(
+                    f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0{request.user.phone}&from=Noble Data&sms={sms_message}")
+                print(response1.text)
+
+                response2 = requests.get(
+                    f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to={phone_number}&from=Noble Data&sms={receiver_message}")
+                print(response2.text)
 
                 return JsonResponse({'status': 'Transaction Completed Successfully', 'icon': 'success'})
             else:
@@ -128,53 +137,53 @@ def airtel_tigo(request):
     form = forms.IShareBundleForm(status)
     reference = helper.ref_generator()
     user_email = request.user.email
-    if request.method == "POST":
-        form = forms.IShareBundleForm(data=request.POST, status=status)
-        if form.is_valid():
-            phone_number = form.cleaned_data["phone_number"]
-            amount = form.cleaned_data["offers"]
-
-            print(amount.price)
-
-            details = {
-                'phone_number': phone_number,
-                'offers': amount.price
-            }
-
-            new_payment = models.Payment.objects.create(
-                user=request.user,
-                reference=reference,
-                transaction_date=datetime.now(),
-                transaction_details=details,
-                channel="ishare",
-            )
-            new_payment.save()
-            print("payment saved")
-            print("form valid")
-
-            url = "https://payproxyapi.hubtel.com/items/initiate"
-
-            payload = json.dumps({
-                "totalAmount": amount.price,
-                "description": "Payment for AT Bundle",
-                "callbackUrl": "https://www.nobledatagh.com/hubtel_webhook",
-                "returnUrl": "https://www.nobledatagh.com",
-                "cancellationUrl": "https://www.nobledatagh.com",
-                "merchantAccountNumber": "2019630",
-                "clientReference": new_payment.reference
-            })
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': 'Basic T0VWRTlCRTphYTVhNDc3YTI3M2Q0NWViODlkZTk4YThmMWYzZDQwMw=='
-            }
-
-            response = requests.request("POST", url, headers=headers, data=payload)
-
-            data = response.json()
-
-            checkoutUrl = data['data']['checkoutUrl']
-
-            return redirect(checkoutUrl)
+    # if request.method == "POST":
+    #     form = forms.IShareBundleForm(data=request.POST, status=status)
+    #     if form.is_valid():
+    #         phone_number = form.cleaned_data["phone_number"]
+    #         amount = form.cleaned_data["offers"]
+    #
+    #         print(amount.price)
+    #
+    #         details = {
+    #             'phone_number': phone_number,
+    #             'offers': amount.price
+    #         }
+    #
+    #         new_payment = models.Payment.objects.create(
+    #             user=request.user,
+    #             reference=reference,
+    #             transaction_date=datetime.now(),
+    #             transaction_details=details,
+    #             channel="ishare",
+    #         )
+    #         new_payment.save()
+    #         print("payment saved")
+    #         print("form valid")
+    #
+    #         url = "https://payproxyapi.hubtel.com/items/initiate"
+    #
+    #         payload = json.dumps({
+    #             "totalAmount": amount.price,
+    #             "description": "Payment for AT Bundle",
+    #             "callbackUrl": "https://www.nobledatagh.com/hubtel_webhook",
+    #             "returnUrl": "https://www.nobledatagh.com",
+    #             "cancellationUrl": "https://www.nobledatagh.com",
+    #             "merchantAccountNumber": "2019630",
+    #             "clientReference": new_payment.reference
+    #         })
+    #         headers = {
+    #             'Content-Type': 'application/json',
+    #             'Authorization': 'Basic T0VWRTlCRTphYTVhNDc3YTI3M2Q0NWViODlkZTk4YThmMWYzZDQwMw=='
+    #         }
+    #
+    #         response = requests.request("POST", url, headers=headers, data=payload)
+    #
+    #         data = response.json()
+    #
+    #         checkoutUrl = data['data']['checkoutUrl']
+    #
+    #         return redirect(checkoutUrl)
     # if request.method == "POST":
     #     form = forms.IShareBundleForm(data=request.POST, status=status)
     #     payment_reference = request.POST.get("reference")
@@ -339,14 +348,21 @@ def mtn_pay_with_wallet(request):
         )
         new_mtn_transaction.save()
 
+        bundle_price_obj = bundle
+        if not bundle_price_obj:
+            return JsonResponse({'status': 'Invalid amount'})
+        purchase_price = bundle_price_obj.purchase_price
+
+        profit = amount - purchase_price
+
         # Create ProfitInstance
-        # new_profit_instance = models.ProfitInstance.objects.create(
-        #     selling_price_total=amount,
-        #     purchase_price_total=purchase_price,
-        #     profit=profit,
-        #     channel="MTN",  # Set your channel here based on user status
-        # )
-        # new_profit_instance.save()
+        new_profit_instance = models.ProfitInstance.objects.create(
+            selling_price_total=amount,
+            purchase_price_total=purchase_price,
+            profit=profit,
+            channel="MTN",  # Set your channel here based on user status
+        )
+        new_profit_instance.save()
 
         user.wallet -= amount
         user.save()
@@ -395,17 +411,24 @@ def big_time_pay_with_wallet(request):
         )
         new_big_time_transaction.save()
 
-        # Create ProfitInstance
-        # new_profit_instance = models.ProfitInstance.objects.create(
-        #     selling_price_total=amount,
-        #     purchase_price_total=purchase_price,
-        #     profit=profit,
-        #     channel="BigTime",  # Set your channel here based on user status
-        # )
-        # new_profit_instance.save()
-
         user.wallet -= amount
         user.save()
+
+        bundle_price_obj = bundle
+        if not bundle_price_obj:
+            return JsonResponse({'status': 'Invalid amount'})
+        purchase_price = bundle_price_obj.purchase_price
+
+        profit = amount - purchase_price
+
+        # Create ProfitInstance
+        new_profit_instance = models.ProfitInstance.objects.create(
+            selling_price_total=amount,
+            purchase_price_total=purchase_price,
+            profit=profit,
+            channel="BigTime",  # Set your channel here based on user status
+        )
+        new_profit_instance.save()
 
         # Send SMS
         sms_headers = {
@@ -569,54 +592,54 @@ def afa_registration(request):
     price = models.AdminInfo.objects.filter().first().afa_price
     user_email = request.user.email
     print(price)
-    if request.method == "POST":
-        form = forms.AFARegistrationForm(request.POST)
-        if form.is_valid():
-            # name = transaction_details["name"]
-            # phone_number = transaction_details["phone"]
-            # gh_card_number = transaction_details["card"]
-            # occupation = transaction_details["occupation"]
-            # date_of_birth = transaction_details["date_of_birth"]
-            details = {
-                "name": form.cleaned_data["name"],
-                "phone": form.cleaned_data["phone_number"],
-                "card": form.cleaned_data["gh_card_number"],
-                "occupation": form.cleaned_data["occupation"],
-                "date_of_birth": form.cleaned_data["date_of_birth"],
-                "region": form.cleaned_data["region"]
-            }
-            new_payment = models.Payment.objects.create(
-                user=request.user,
-                reference=reference,
-                transaction_details=details,
-                transaction_date=datetime.now(),
-                channel="afa"
-            )
-            new_payment.save()
-
-            url = "https://payproxyapi.hubtel.com/items/initiate"
-
-            payload = json.dumps({
-                "totalAmount": price,
-                "description": "Payment for AFA Registration",
-                "callbackUrl": "https://www.nobledatagh.com/hubtel_webhook",
-                "returnUrl": "https://www.nobledatagh.com",
-                "cancellationUrl": "https://www.nobledatagh.com",
-                "merchantAccountNumber": "2019630",
-                "clientReference": new_payment.reference
-            })
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': 'Basic T0VWRTlCRTphYTVhNDc3YTI3M2Q0NWViODlkZTk4YThmMWYzZDQwMw=='
-            }
-
-            response = requests.request("POST", url, headers=headers, data=payload)
-
-            data = response.json()
-
-            checkoutUrl = data['data']['checkoutUrl']
-
-            return redirect(checkoutUrl)
+    # if request.method == "POST":
+    #     form = forms.AFARegistrationForm(request.POST)
+    #     if form.is_valid():
+    #         # name = transaction_details["name"]
+    #         # phone_number = transaction_details["phone"]
+    #         # gh_card_number = transaction_details["card"]
+    #         # occupation = transaction_details["occupation"]
+    #         # date_of_birth = transaction_details["date_of_birth"]
+    #         details = {
+    #             "name": form.cleaned_data["name"],
+    #             "phone": form.cleaned_data["phone_number"],
+    #             "card": form.cleaned_data["gh_card_number"],
+    #             "occupation": form.cleaned_data["occupation"],
+    #             "date_of_birth": form.cleaned_data["date_of_birth"],
+    #             "region": form.cleaned_data["region"]
+    #         }
+    #         new_payment = models.Payment.objects.create(
+    #             user=request.user,
+    #             reference=reference,
+    #             transaction_details=details,
+    #             transaction_date=datetime.now(),
+    #             channel="afa"
+    #         )
+    #         new_payment.save()
+    #
+    #         url = "https://payproxyapi.hubtel.com/items/initiate"
+    #
+    #         payload = json.dumps({
+    #             "totalAmount": price,
+    #             "description": "Payment for AFA Registration",
+    #             "callbackUrl": "https://www.nobledatagh.com/hubtel_webhook",
+    #             "returnUrl": "https://www.nobledatagh.com",
+    #             "cancellationUrl": "https://www.nobledatagh.com",
+    #             "merchantAccountNumber": "2019630",
+    #             "clientReference": new_payment.reference
+    #         })
+    #         headers = {
+    #             'Content-Type': 'application/json',
+    #             'Authorization': 'Basic T0VWRTlCRTphYTVhNDc3YTI3M2Q0NWViODlkZTk4YThmMWYzZDQwMw=='
+    #         }
+    #
+    #         response = requests.request("POST", url, headers=headers, data=payload)
+    #
+    #         data = response.json()
+    #
+    #         checkoutUrl = data['data']['checkoutUrl']
+    #
+    #         return redirect(checkoutUrl)
     form = forms.AFARegistrationForm()
     context = {'form': form, 'ref': reference, 'price': price, "email": user_email,
                "wallet": 0 if user.wallet is None else user.wallet}
@@ -688,47 +711,47 @@ def big_time(request):
     reference = helper.ref_generator()
     user_email = request.user.email
 
-    if request.method == "POST":
-        form = forms.BigTimeBundleForm(data=request.POST, status=status)
-        if form.is_valid():
-            phone_number = form.cleaned_data['phone_number']
-            amount = form.cleaned_data['offers']
-            details = {
-                'phone_number': phone_number,
-                'offers': amount.price
-            }
-            new_payment = models.Payment.objects.create(
-                user=request.user,
-                reference=reference,
-                transaction_details=details,
-                transaction_date=datetime.now(),
-                channel="bigtime"
-            )
-            new_payment.save()
-
-            url = "https://payproxyapi.hubtel.com/items/initiate"
-
-            payload = json.dumps({
-                "totalAmount": amount.price,
-                "description": "Payment for AFA Registration",
-                "callbackUrl": "https://www.nobledatagh.com/hubtel_webhook",
-                "returnUrl": "https://www.nobledatagh.com",
-                "cancellationUrl": "https://www.nobledatagh.com",
-                "merchantAccountNumber": "2019630",
-                "clientReference": new_payment.reference
-            })
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': 'Basic T0VWRTlCRTphYTVhNDc3YTI3M2Q0NWViODlkZTk4YThmMWYzZDQwMw=='
-            }
-
-            response = requests.request("POST", url, headers=headers, data=payload)
-
-            data = response.json()
-
-            checkoutUrl = data['data']['checkoutUrl']
-
-            return redirect(checkoutUrl)
+    # if request.method == "POST":
+    #     form = forms.BigTimeBundleForm(data=request.POST, status=status)
+    #     if form.is_valid():
+    #         phone_number = form.cleaned_data['phone_number']
+    #         amount = form.cleaned_data['offers']
+    #         details = {
+    #             'phone_number': phone_number,
+    #             'offers': amount.price
+    #         }
+    #         new_payment = models.Payment.objects.create(
+    #             user=request.user,
+    #             reference=reference,
+    #             transaction_details=details,
+    #             transaction_date=datetime.now(),
+    #             channel="bigtime"
+    #         )
+    #         new_payment.save()
+    #
+    #         url = "https://payproxyapi.hubtel.com/items/initiate"
+    #
+    #         payload = json.dumps({
+    #             "totalAmount": amount.price,
+    #             "description": "Payment for AFA Registration",
+    #             "callbackUrl": "https://www.nobledatagh.com/hubtel_webhook",
+    #             "returnUrl": "https://www.nobledatagh.com",
+    #             "cancellationUrl": "https://www.nobledatagh.com",
+    #             "merchantAccountNumber": "2019630",
+    #             "clientReference": new_payment.reference
+    #         })
+    #         headers = {
+    #             'Content-Type': 'application/json',
+    #             'Authorization': 'Basic T0VWRTlCRTphYTVhNDc3YTI3M2Q0NWViODlkZTk4YThmMWYzZDQwMw=='
+    #         }
+    #
+    #         response = requests.request("POST", url, headers=headers, data=payload)
+    #
+    #         data = response.json()
+    #
+    #         checkoutUrl = data['data']['checkoutUrl']
+    #
+    #         return redirect(checkoutUrl)
     user = models.CustomUser.objects.get(id=request.user.id)
     # phone_num = user.phone
     # mtn_dict = {}
@@ -782,7 +805,7 @@ def paystack_webhook(request):
                 paid_amount = r_data.get('amount')
                 reference = r_data.get('reference')
 
-                slashed_amount = float(paid_amount) / 100
+                slashed_amount = (float(paid_amount) / 100) * (1 - 0.0195)
                 reference = r_data.get('reference')
 
                 rounded_real_amount = round(float(real_amount))
@@ -852,19 +875,17 @@ def paystack_webhook(request):
                             transaction_to_be_updated.transaction_status = "Completed"
                             transaction_to_be_updated.save()
 
-                            # purchase_price = models.IshareBundlePrice.objects.get(price=float(
-                            #     real_amount)).purchase_price
-                            #
-                            # profit = float(real_amount) - float(purchase_price)
+                            purchase_price = bundle.purchase_price
 
-                            # new_profit_instance = models.ProfitInstance.objects.create(
-                            #     selling_price_total=real_amount,
-                            #     purchase_price_total=purchase_price,
-                            #     profit=profit,
-                            #     channel="AT",  # Set your channel here based on user status
-                            # )
-                            # new_profit_instance.save()
+                            profit = float(real_amount) - float(purchase_price)
 
+                            new_profit_instance = models.ProfitInstance.objects.create(
+                                selling_price_total=real_amount,
+                                purchase_price_total=purchase_price,
+                                profit=profit,
+                                channel="AT",  # Set your channel here based on user status
+                            )
+                            new_profit_instance.save()
 
                             print(user.phone)
                             print("***********")
@@ -873,24 +894,32 @@ def paystack_webhook(request):
 
                             num_without_0 = receiver[1:]
                             print(num_without_0)
-                            receiver_body = {
-                                'recipient': f"233{num_without_0}",
-                                'sender_id': 'Noble Data',
-                                'message': receiver_message
-                            }
+                            # receiver_body = {
+                            #     'recipient': f"233{num_without_0}",
+                            #     'sender_id': 'Noble Data',
+                            #     'message': receiver_message
+                            # }
+                            #
+                            # response = requests.request('POST', url=sms_url, params=receiver_body, headers=sms_headers)
+                            # print(response.text)
+                            #
+                            # sms_body = {
+                            #     'recipient': f"233{user.phone}",
+                            #     'sender_id': 'Noble Data',
+                            #     'message': sms_message
+                            # }
+                            #
+                            # response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+                            #
+                            # print(response.text)
 
-                            response = requests.request('POST', url=sms_url, params=receiver_body, headers=sms_headers)
-                            print(response.text)
+                            response1 = requests.get(
+                                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0{user.phone}&from=Noble Data&sms={sms_message}")
+                            print(response1.text)
 
-                            sms_body = {
-                                'recipient': f"233{user.phone}",
-                                'sender_id': 'Noble Data',
-                                'message': sms_message
-                            }
-
-                            response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
-
-                            print(response.text)
+                            response2 = requests.get(
+                                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to={num_without_0}&from=Noble Data&sms={receiver_message}")
+                            print(response2.text)
 
                             return HttpResponse(status=200)
                         else:
@@ -944,18 +973,17 @@ def paystack_webhook(request):
 
                     print(receiver)
 
-                    # purchase_price = models.MTNBundlePrice.objects.get(price=float(
-                    #     real_amount)).purchase_price
-                    #
-                    # profit = float(real_amount) - float(purchase_price)
-                    #
-                    # new_profit_instance = models.ProfitInstance.objects.create(
-                    #     selling_price_total=real_amount,
-                    #     purchase_price_total=purchase_price,
-                    #     profit=profit,
-                    #     channel="MTN",  # Set your channel here based on user status
-                    # )
-                    # new_profit_instance.save()
+                    purchase_price = bundle.purchase_price
+
+                    profit = float(real_amount) - float(purchase_price)
+
+                    new_profit_instance = models.ProfitInstance.objects.create(
+                        selling_price_total=real_amount,
+                        purchase_price_total=purchase_price,
+                        profit=profit,
+                        channel="MTN",  # Set your channel here based on user status
+                    )
+                    new_profit_instance.save()
 
                     new_mtn_transaction = models.MTNTransaction.objects.create(
                         user=user,
@@ -1054,8 +1082,11 @@ def change_excel_status(request, status, to_change_to):
                 'message': sms_message
             }
             try:
-                response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
-                print(response.text)
+                # response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+                # print(response.text)
+                response1 = requests.get(
+                    f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0{transaction_number}&from=Noble Data&sms={sms_message}")
+                print(response1.text)
             except:
                 messages.success(request, f"Transaction Completed")
                 return redirect('mtn_admin', status=status)
@@ -1204,8 +1235,9 @@ def bt_mark_as_sent(request, pk):
             'message': sms_message
         }
         try:
-            response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
-            print(response.text)
+            response1 = requests.get(
+                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0{txn.user.phone}&from=Noble Data&sms={sms_message}")
+            print(response1.text)
         except:
             messages.success(request, f"Transaction Completed")
             return redirect('bt_admin')
@@ -1233,8 +1265,9 @@ def afa_mark_as_sent(request, pk):
             'sender_id': 'Noble Data',
             'message': sms_message
         }
-        response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
-        print(response.text)
+        response1 = requests.get(
+            f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0{txn.user.phone}&from=Noble Data&sms={sms_message}")
+        print(response1.text)
         messages.success(request, f"Transaction Completed")
         return redirect('afa_admin')
 
@@ -1399,8 +1432,9 @@ def credit_user_from_list(request, reference):
         }
         try:
             print("tried")
-            response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
-            print(response.text)
+            response1 = requests.get(
+                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0{custom_user.phone}&from=Noble Data&sms={sms_message}")
+            print(response1.text)
         except:
             print("could not send message")
             pass
@@ -1736,11 +1770,11 @@ def password_reset_request(request):
                     'sender_id': 'Noble Data',
                     'message': email
                 }
-                response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
-                print(response.text)
-                # requests.get(
-                #     f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=UnBzemdvanJyUGxhTlJzaVVQaHk&to=0{current_user.phone}&from=GEO_AT&sms={email}")
-
+                # response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
+                # print(response.text)
+                response1 = requests.get(
+                    f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0{user.phone}&from=Noble Data&sms={email}")
+                print(response1.text)
                 return redirect("/password_reset/done/")
     password_reset_form = PasswordResetForm()
     return render(request=request, template_name="password/password_reset.html",

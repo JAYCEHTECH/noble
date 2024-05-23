@@ -54,6 +54,7 @@ class BigTimeBundlePrice(models.Model):
 class AgentBigTimeBundlePrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     bundle_volume = models.FloatField(null=False, blank=False)
+    purchase_price = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         if self.bundle_volume >= 1000:
@@ -64,6 +65,7 @@ class AgentBigTimeBundlePrice(models.Model):
 class SuperAgentBigTimeBundlePrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     bundle_volume = models.FloatField(null=False, blank=False)
+    purchase_price = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         if self.bundle_volume >= 1000:
@@ -98,6 +100,7 @@ class IshareBundlePrice(models.Model):
 class AgentIshareBundlePrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     bundle_volume = models.FloatField(null=False, blank=False)
+    purchase_price = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         if self.bundle_volume >= 1000:
@@ -108,6 +111,7 @@ class AgentIshareBundlePrice(models.Model):
 class SuperAgentIshareBundlePrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     bundle_volume = models.FloatField(null=False, blank=False)
+    purchase_price = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         if self.bundle_volume >= 1000:
@@ -148,6 +152,7 @@ class MTNBundlePrice(models.Model):
 class AgentMTNBundlePrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     bundle_volume = models.FloatField(null=False, blank=False)
+    purchase_price = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         if self.bundle_volume >= 1000:
@@ -158,6 +163,7 @@ class AgentMTNBundlePrice(models.Model):
 class SuperAgentMTNBundlePrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     bundle_volume = models.FloatField(null=False, blank=False)
+    purchase_price = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         if self.bundle_volume >= 1000:

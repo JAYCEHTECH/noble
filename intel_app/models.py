@@ -313,6 +313,16 @@ class AgentVodaBundlePrice(models.Model):
         return f"GHS{self.price} - {self.bundle_volume}MB"
 
 
+class SuperAgentVodaBundlePrice(models.Model):
+    price = models.FloatField(null=False, blank=False)
+    bundle_volume = models.FloatField(null=False, blank=False)
+
+    def __str__(self):
+        if self.bundle_volume >= 1000:
+            return f"GHS{self.price} - {self.bundle_volume / 1000}GB"
+        return f"GHS{self.price} - {self.bundle_volume}MB"
+
+
 class VodafoneTransaction(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     bundle_number = models.BigIntegerField(null=False, blank=False)
@@ -341,6 +351,14 @@ class ATCreditPrice(models.Model):
 
 
 class AgentATCreditPrice(models.Model):
+    price = models.FloatField(null=False, blank=False)
+    minutes = models.FloatField(null=False, blank=False)
+
+    def __str__(self):
+        return f"GHS{self.price} - {self.minutes} Minutes"
+
+
+class SuperAgentATCreditPrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     minutes = models.FloatField(null=False, blank=False)
 

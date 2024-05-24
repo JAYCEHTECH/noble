@@ -77,9 +77,11 @@ admin.site.register(models.Announcement)
 admin.site.register(models.WalletTransaction, WalletTransactionAdmin)
 
 admin.site.register(models.AgentVodaBundlePrice)
+admin.site.register(models.SuperAgentVodaBundlePrice)
 admin.site.register(models.VodaBundlePrice)
 admin.site.register(models.VodafoneTransaction, VodafoneTransactionAdmin)
 
 admin.site.register(models.ATMinuteTransaction)
 admin.site.register(models.ATCreditPrice)
 admin.site.register(models.AgentATCreditPrice)
+admin.site.register(models.SuperAgentATCreditPrice)

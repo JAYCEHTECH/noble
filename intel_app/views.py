@@ -1075,6 +1075,86 @@ def paystack_webhook(request):
                     new_profit_instance.save()
 
                     return HttpResponse(status=200)
+                elif channel == "voda":
+                    new_payment = models.Payment.objects.create(
+                        user=user,
+                        reference=reference,
+                        amount=paid_amount,
+                        transaction_date=datetime.now(),
+                        transaction_status="Completed"
+                    )
+                    new_payment.save()
+
+                    if user.status == "User":
+                        bundle = models.VodaBundlePrice.objects.get(price=float(real_amount)).bundle_volume
+                    elif user.status == "Agent":
+                        bundle = models.AgentVodaBundlePrice.objects.get(price=float(real_amount)).bundle_volume
+                    elif user.status == "Super Agent":
+                        bundle = models.SuperAgentVodaBundlePrice.objects.get(price=float(real_amount)).bundle_volume
+                    else:
+                        bundle = models.VodaBundlePrice.objects.get(price=float(real_amount)).bundle_volume
+
+                    new_voda_transaction = models.VodafoneTransaction.objects.create(
+                        user=user,
+                        bundle_number=receiver,
+                        offer=f"{bundle}MB",
+                        reference=reference,
+                    )
+                    new_voda_transaction.save()
+
+                    print(receiver)
+
+                    if user.status == "User":
+                        bundle = models.VodaBundlePrice.objects.get(price=float(real_amount))
+                    elif user.status == "Agent":
+                        bundle = models.AgentVodaBundlePrice.objects.get(price=float(real_amount))
+                    elif user.status == "Super Agent":
+                        bundle = models.SuperAgentVodaBundlePrice.objects.get(price=float(real_amount))
+                    else:
+                        bundle = models.VodaBundlePrice.objects.get(price=float(real_amount))
+
+                    purchase_price = bundle.purchase_price
+
+                    profit = float(real_amount) - float(purchase_price)
+
+                    new_profit_instance = models.ProfitInstance.objects.create(
+                        selling_price_total=real_amount,
+                        purchase_price_total=purchase_price,
+                        profit=profit,
+                        channel="Voda",  # Set your channel here based on user status
+                    )
+                    new_profit_instance.save()
+
+                    return HttpResponse(status=200)
+                elif channel == "at_min":
+                    new_payment = models.Payment.objects.create(
+                        user=user,
+                        reference=reference,
+                        amount=paid_amount,
+                        transaction_date=datetime.now(),
+                        transaction_status="Pending"
+                    )
+                    new_payment.save()
+
+                    if user.status == "User":
+                        minutes = models.ATCreditPrice.objects.get(price=float(real_amount)).minutes
+                    elif user.status == "Agent":
+                        minutes = models.AgentATCreditPrice.objects.get(price=float(real_amount)).minutes
+                    elif user.status == "Super Agent":
+                        minutes = models.SuperAgentATCreditPrice.objects.get(price=float(real_amount)).minutes
+                    else:
+                        minutes = models.ATCreditPrice.objects.get(price=float(real_amount)).minutes
+
+                    print(receiver)
+
+                    new_mtn_transaction = models.ATMinuteTransaction.objects.create(
+                        user=user,
+                        bundle_number=receiver,
+                        offer=f"{minutes} Minutes",
+                        reference=reference,
+                    )
+                    new_mtn_transaction.save()
+                    return HttpResponse(status=200)
                 else:
                     return HttpResponse(status=200)
             else:
@@ -1979,6 +2059,7 @@ def voda(request):
     form = forms.VodaBundleForm(status)
     reference = helper.ref_generator()
     user_email = request.user.email
+    db_user_id = request.user.id
 
     # if request.method == "POST":
         # payment_reference = request.POST.get("reference")
@@ -2017,7 +2098,7 @@ def voda(request):
     # for offer in mtn_offer:
     #     mtn_dict[str(offer)] = offer.bundle_volume
     context = {'form': form,
-               "ref": reference, "email": user_email, "wallet": 0 if user.wallet is None else user.wallet}
+               "ref": reference, "email": user_email, "wallet": 0 if user.wallet is None else user.wallet, 'id': db_user_id}
     return render(request, "layouts/services/voda.html", context=context)
 
 
@@ -2037,9 +2118,15 @@ def voda_pay_with_wallet(request):
         elif user.wallet <= 0 or user.wallet < float(amount):
             return JsonResponse(
                 {'status': f'Your wallet balance is low. Contact the admin to recharge.'})
-        bundle = models.VodaBundlePrice.objects.get(
-            price=float(amount)).bundle_volume if user.status == "User" else models.AgentVodaBundlePrice.objects.get(
-            price=float(amount)).bundle_volume
+
+        if user.status == "User":
+            bundle = models.VodaBundlePrice.objects.get(price=float(amount)).bundle
+        elif user.status == "Agent":
+            bundle = models.AgentVodaBundlePrice.objects.get(price=float(amount)).bundle
+        elif user.status == "Super Agent":
+            bundle = models.SuperAgentATCreditPrice.objects.get(price=float(amount)).bundle
+        else:
+            bundle = models.VodaBundlePrice.objects.get(price=float(amount)).bundle
 
         print(bundle)
         new_mtn_transaction = models.VodafoneTransaction.objects.create(
@@ -2169,6 +2256,8 @@ def pay_with_wallet_minutes(request):
             minutes = models.ATCreditPrice.objects.get(price=float(amount)).minutes
         elif user.status == "Agent":
             minutes = models.AgentATCreditPrice.objects.get(price=float(amount)).minutes
+        elif user.status == "Super Agent":
+            minutes = models.SuperAgentATCreditPrice.objects.get(price=float(amount)).minutes
         else:
             minutes = models.ATCreditPrice.objects.get(price=float(amount)).minutes
 

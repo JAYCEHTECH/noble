@@ -118,6 +118,8 @@ class VodaBundleForm(forms.Form):
             self.fields['offers'].queryset = models.VodaBundlePrice.objects.all()
         elif status == "Agent":
             self.fields['offers'].queryset = models.AgentVodaBundlePrice.objects.all()
+        elif status == "Super Agent":
+            self.fields['offers'].queryset = models.SuperAgentVodaBundlePrice.objects.all()
 
 
 class ATCreditForm(forms.Form):
@@ -133,4 +135,6 @@ class ATCreditForm(forms.Form):
             self.fields['offers'].queryset = models.ATCreditPrice.objects.all()
         elif status == "Agent":
             self.fields['offers'].queryset = models.AgentATCreditPrice.objects.all()
+        elif status == "Super Agent":
+            self.fields['offers'].queryset = models.SuperAgentATCreditPrice.objects.all
         # self.fields['size'].queryset = models.Size.objects.filter(domain=domain)

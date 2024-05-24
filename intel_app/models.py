@@ -278,3 +278,16 @@ class ProfitInstance(models.Model):
         ("BigTime", "BigTime"),
     )
     channel = models.CharField(max_length=250, null=False, blank=False)
+
+
+class WalletTransaction(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    choices = (
+        ("Debit", "Debit"),
+        ("Credit", "Credit"),
+    )
+    transaction_type = models.CharField(max_length=250, null=True, blank=True, choices=choices)
+    transaction_date = models.DateTimeField(auto_now_add=True)
+    transaction_use = models.CharField(max_length=250, null=True, blank=True)
+    transaction_amount = models.FloatField(null=False)
+    new_balance = models.FloatField(null=True)

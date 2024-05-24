@@ -16,6 +16,7 @@ urlpatterns = [
     path('services/afa/', views.afa_registration, name='afa'),
     path('history/mtn', views.mtn_history, name="mtn-history"),
     path('history/big_time', views.big_time_history, name="bt-history"),
+    path('history/wallet', views.wallet_history, name='wallet_history'),
     path('history/afa', views.afa_history, name="afa-history"),
     path('verify_transaction/<str:reference>/', views.verify_transaction, name="verify_transaction"),
 
@@ -38,6 +39,8 @@ urlpatterns = [
     path('elevated/topup-list', views.topup_list, name="topup_list"),
     path('credit/<str:reference>', views.credit_user_from_list, name='credit'),
     path('paystack_webhook', views.paystack_webhook, name='paystack_webhook'),
+
+    path('query_transaction', views.query_txn, name='query_txn'),
 
     path('login', authViews.login_page, name='login'),
     path('signup', authViews.sign_up, name='signup'),

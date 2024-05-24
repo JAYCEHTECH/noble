@@ -88,6 +88,17 @@ def pay_with_wallet(request):
                 user.wallet -= amount  # Subtract selling price from wallet balance
                 user.save()
 
+                receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {request.user.phone}.\nReference: {reference}\n"
+                sms_message = f"Hello @{request.user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {reference}\nCurrent Wallet Balance: {user.wallet}\nThank you for using Noble Data."
+
+                response1 = requests.get(
+                    f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0{request.user.phone}&from=Noble Data&sms={sms_message}")
+                print(response1.text)
+
+                response2 = requests.get(
+                    f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to={phone_number}&from=Noble Data&sms={receiver_message}")
+                print(response2.text)
+
                 if user.status == "User":
                     bundle = models.IshareBundlePrice.objects.get(price=amount)
                 elif user.status == "Agent":
@@ -114,16 +125,15 @@ def pay_with_wallet(request):
                 )
                 new_profit_instance.save()
 
-                receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {request.user.phone}.\nReference: {reference}\n"
-                sms_message = f"Hello @{request.user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {phone_number}.\nReference: {reference}\nCurrent Wallet Balance: {user.wallet}\nThank you for using Noble Data."
+                new_wallet_transaction = models.WalletTransaction.objects.create(
+                    user=request.user,
+                    transaction_type="Debit",
+                    transaction_amount=float(amount),
+                    transaction_use="AT",
+                    new_balance=user.wallet
+                )
+                new_wallet_transaction.save()
 
-                response1 = requests.get(
-                    f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0{request.user.phone}&from=Noble Data&sms={sms_message}")
-                print(response1.text)
-
-                response2 = requests.get(
-                    f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to={phone_number}&from=Noble Data&sms={receiver_message}")
-                print(response2.text)
 
                 return JsonResponse({'status': 'Transaction Completed Successfully', 'icon': 'success'})
             else:
@@ -357,6 +367,8 @@ def mtn_pay_with_wallet(request):
             reference=reference,
         )
         new_mtn_transaction.save()
+        user.wallet -= amount
+        user.save()
         if user.status == "User":
             bundle = models.MTNBundlePrice.objects.get(price=amount)
         elif user.status == "Agent":
@@ -382,8 +394,14 @@ def mtn_pay_with_wallet(request):
         )
         new_profit_instance.save()
 
-        user.wallet -= amount
-        user.save()
+        new_wallet_transaction = models.WalletTransaction.objects.create(
+            user=request.user,
+            transaction_type="Debit",
+            transaction_amount=float(amount),
+            transaction_use="MTN",
+            new_balance=user.wallet
+        )
+        new_wallet_transaction.save()
 
         return JsonResponse({'status': "Your transaction will be completed shortly", 'icon': 'success'})
     return redirect('mtn')
@@ -456,6 +474,15 @@ def big_time_pay_with_wallet(request):
             channel="BigTime",  # Set your channel here based on user status
         )
         new_profit_instance.save()
+
+        new_wallet_transaction = models.WalletTransaction.objects.create(
+            user=request.user,
+            transaction_type="Debit",
+            transaction_amount=float(amount),
+            transaction_use="Big Time",
+            new_balance=user.wallet
+        )
+        new_wallet_transaction.save()
 
         # Send SMS
         sms_headers = {
@@ -706,6 +733,15 @@ def afa_registration_wallet(request):
         new_registration.save()
         user.wallet -= float(price)
         user.save()
+
+        new_wallet_transaction = models.WalletTransaction.objects.create(
+            user=request.user,
+            transaction_type="Debit",
+            transaction_amount=float(amount),
+            transaction_use="AFA",
+            new_balance=user.wallet
+        )
+        new_wallet_transaction.save()
         sms_headers = {
             'Authorization': 'Bearer 1050|VDqcCUHwCBEbjcMk32cbdOhCFlavpDhy6vfgM4jU',
             'Content-Type': 'application/json'
@@ -902,6 +938,19 @@ def paystack_webhook(request):
                             transaction_to_be_updated.transaction_status = "Completed"
                             transaction_to_be_updated.save()
 
+                            num_without_0 = receiver[1:]
+
+                            receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {user.phone}.\nReference: {reference}\n"
+                            sms_message = f"Hello @{user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {receiver}.\nReference: {reference}\nThank you for using Noble Data GH."
+
+                            response1 = requests.get(
+                                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0{user.phone}&from=Noble Data&sms={sms_message}")
+                            print(response1.text)
+
+                            response2 = requests.get(
+                                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to={num_without_0}&from=Noble Data&sms={receiver_message}")
+                            print(response2.text)
+
                             bundle = models.IshareBundlePrice.objects.get(price=float(
                                 real_amount)) if user.status == "User" else models.AgentIshareBundlePrice.objects.get(
                                 price=float(real_amount))
@@ -923,7 +972,7 @@ def paystack_webhook(request):
                             receiver_message = f"Your bundle purchase has been completed successfully. {bundle}MB has been credited to you by {user.phone}.\nReference: {reference}\n"
                             sms_message = f"Hello @{user.username}. Your bundle purchase has been completed successfully. {bundle}MB has been credited to {receiver}.\nReference: {reference}\nThank you for using Noble Data GH.\n\nThe Noble Data GH"
 
-                            num_without_0 = receiver[1:]
+
                             print(num_without_0)
                             # receiver_body = {
                             #     'recipient': f"233{num_without_0}",
@@ -944,13 +993,7 @@ def paystack_webhook(request):
                             #
                             # print(response.text)
 
-                            response1 = requests.get(
-                                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0{user.phone}&from=Noble Data&sms={sms_message}")
-                            print(response1.text)
 
-                            response2 = requests.get(
-                                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to={num_without_0}&from=Noble Data&sms={receiver_message}")
-                            print(response2.text)
 
                             return HttpResponse(status=200)
                         else:
@@ -1311,6 +1354,17 @@ def afa_mark_as_sent(request, pk):
         messages.success(request, f"Transaction Completed")
         return redirect('afa_admin')
 
+@login_required(login_url='login')
+def wallet_history(request):
+    if request.user.data_bundle_access:
+        user_wallet_transactions = models.WalletTransaction.objects.filter(user=request.user).order_by(
+            'transaction_date').reverse()[:1000]
+        header = "Wallet Transactions"
+        net = "wallet"
+        context = {'txns': user_wallet_transactions, "header": header, "net": net}
+        return render(request, "layouts/wallet_history.html", context=context)
+    else:
+        return redirect("shop_home")
 
 def credit_user(request):
     form = forms.CreditUserForm()
@@ -1325,9 +1379,25 @@ def credit_user(request):
                 user_needed = models.CustomUser.objects.get(username=user)
                 if user_needed.wallet is None:
                     user_needed.wallet = float(amount)
+                    user_needed.wallet = float(user.wallet)
+                    new_wallet_transaction = models.WalletTransaction.objects.create(
+                        user=user_needed,
+                        transaction_type="Credit",
+                        transaction_amount=float(amount),
+                        transaction_use="Top up"
+                    )
                 else:
                     user_needed.wallet += float(amount)
+                    user_needed.wallet = float(user.wallet)
+                    new_wallet_transaction = models.WalletTransaction.objects.create(
+                        user=request.user,
+                        transaction_type="Credit",
+                        transaction_amount=float(amount),
+                        transaction_use="Top up"
+                    )
                 user_needed.save()
+                new_wallet_transaction.new_balance = user_needed.wallet
+                new_wallet_transaction.save()
                 print(user_needed.username)
                 messages.success(request, "Crediting Successful")
                 return redirect('credit_user')
@@ -1454,6 +1524,14 @@ def credit_user_from_list(request, reference):
         print(amount)
         custom_user.wallet += amount
         custom_user.save()
+        new_wallet_transaction = models.WalletTransaction.objects.create(
+            user=custom_user,
+            transaction_type="Credit",
+            transaction_amount=float(amount),
+            transaction_use="Top up",
+            new_balance=custom_user.wallet
+        )
+        new_wallet_transaction.save()
         crediting.status = True
         crediting.credited_at = datetime.now()
         crediting.save()
@@ -1870,3 +1948,27 @@ def channel_profit(request, channel):
     }
 
     return render(request, 'layouts/services/profit.html', context)
+
+
+def query_txn(request):
+    if request.method == "POST":
+        reference = request.POST.get('reference')
+        print(reference)
+
+        headers = {
+            "api-key": config("API_KEY"),
+            "api-secret": config("API_SECRET"),
+        }
+        response = requests.post(
+            url=f"https://console.bestpaygh.com/api/flexi/v1/transaction_detail/{reference.strip()}/", headers=headers)
+        data = response.json()
+        print(data)
+        try:
+            print(data["message"])
+            messages.info(request, data["message"])
+        except:
+            print(data['api_response']['message'])
+            messages.info(request, data['api_response']['message'])
+
+        return redirect('query_txn')
+    return render(request, "layouts/query_txn.html")

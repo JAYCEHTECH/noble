@@ -1232,8 +1232,9 @@ def mark_as_sent(request, pk):
             'message': sms_message
         }
         try:
-            response = requests.request('POST', url=sms_url, params=sms_body, headers=sms_headers)
-            print(response.text)
+            response1 = requests.get(
+                f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0{txn.user.phone}&from=Noble Data&sms={sms_message}")
+            print(response1.text)
         except:
             messages.success(request, f"Transaction Completed")
             return redirect('mtn_admin', status="Pending")

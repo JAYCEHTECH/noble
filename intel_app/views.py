@@ -87,6 +87,15 @@ def pay_with_wallet(request):
                 user.wallet -= amount  # Subtract selling price from wallet balance
                 user.save()
 
+                if user.status == "User":
+                    bundle = models.IshareBundlePrice.objects.get(price=amount)
+                elif user.status == "Agent":
+                    bundle = models.AgentIshareBundlePrice.objects.get(price=amount)
+                elif user.status == "Super Agent":
+                    bundle = models.SuperAgentIshareBundlePrice.objects.get(price=amount)
+                else:
+                    bundle = models.IshareBundlePrice.objects.get(price=amount)
+
                 # Get the purchase price based on the selling price
                 bundle_price_obj = bundle
                 if not bundle_price_obj:
@@ -347,6 +356,14 @@ def mtn_pay_with_wallet(request):
             reference=reference,
         )
         new_mtn_transaction.save()
+        if user.status == "User":
+            bundle = models.MTNBundlePrice.objects.get(price=amount)
+        elif user.status == "Agent":
+            bundle = models.AgentMTNBundlePrice.objects.get(price=amount)
+        elif user.status == "Super Agent":
+            bundle = models.SuperAgentMTNBundlePrice.objects.get(price=amount)
+        else:
+            bundle = models.MTNBundlePrice.objects.get(price=amount)
 
         bundle_price_obj = bundle
         if not bundle_price_obj:
@@ -413,6 +430,15 @@ def big_time_pay_with_wallet(request):
 
         user.wallet -= amount
         user.save()
+
+        if user.status == "User":
+            bundle = models.BigTimeBundlePrice.objects.get(price=amount)
+        elif user.status == "Agent":
+            bundle = models.AgentBigTimeBundlePrice.objects.get(price=amount)
+        elif user.status == "Super Agent":
+            bundle = models.SuperAgentBigTimeBundlePrice.objects.get(price=amount)
+        else:
+            bundle = models.BigTimeBundlePrice.objects.get(price=amount)
 
         bundle_price_obj = bundle
         if not bundle_price_obj:

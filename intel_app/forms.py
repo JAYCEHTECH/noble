@@ -106,3 +106,31 @@ class AFARegistrationForm(forms.ModelForm):
         model = models.AFARegistration
         fields = ('name', 'phone_number', 'gh_card_number', 'occupation', 'date_of_birth', 'region')
 
+
+class VodaBundleForm(forms.Form):
+    phone_number = forms.IntegerField(widget=forms.NumberInput(attrs={'class': 'form-control phone', 'placeholder': '0200000000'}))
+    offers = forms.ModelChoiceField(queryset=models.VodaBundlePrice.objects.all().order_by('price'), to_field_name='price', empty_label=None,
+                                    widget=forms.Select(attrs={'class': 'form-control airtime-input'}))
+
+    def __init__(self, status, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if status == "User":
+            self.fields['offers'].queryset = models.VodaBundlePrice.objects.all()
+        elif status == "Agent":
+            self.fields['offers'].queryset = models.AgentVodaBundlePrice.objects.all()
+
+
+class ATCreditForm(forms.Form):
+    phone_number = forms.IntegerField(
+        widget=forms.NumberInput(attrs={'class': 'form-control phone', 'placeholder': '0270000000'}))
+    offers = forms.ModelChoiceField(queryset=models.ATCreditPrice.objects.all().order_by('price'),
+                                    to_field_name='price', empty_label=None,
+                                    widget=forms.Select(attrs={'class': 'form-control airtime-input'}))
+
+    def __init__(self, status, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if status == "User":
+            self.fields['offers'].queryset = models.ATCreditPrice.objects.all()
+        elif status == "Agent":
+            self.fields['offers'].queryset = models.AgentATCreditPrice.objects.all()
+        # self.fields['size'].queryset = models.Size.objects.filter(domain=domain)

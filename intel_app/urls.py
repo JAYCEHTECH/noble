@@ -11,6 +11,7 @@ urlpatterns = [
     path('services/mtn', views.mtn, name='mtn'),
     path('services/airtel-tigo/', views.airtel_tigo, name='airtel-tigo'),
     path('services/mtn/', views.mtn, name='mtn'),
+    path('services/voda/', views.voda, name='voda'),
     path('history/airtel-tigo', views.history, name='history'),
     path('services/big_time/', views.big_time, name='big_time'),
     path('services/afa/', views.afa_registration, name='afa'),
@@ -19,6 +20,18 @@ urlpatterns = [
     path('history/wallet', views.wallet_history, name='wallet_history'),
     path('history/afa', views.afa_history, name="afa-history"),
     path('verify_transaction/<str:reference>/', views.verify_transaction, name="verify_transaction"),
+
+    path('history/voda', views.voda_history, name="voda-history"),
+    path('voda_admin', views.admin_voda_history, name='voda_admin'),
+    path('voda_pay_with_wallet/', views.voda_pay_with_wallet, name='voda_pay_with_wallet'),
+    path('voda_mark_as_sent/<int:pk>', views.voda_mark_as_sent, name='voda_mark_as_sent'),
+
+    path('at_minutes_pay_with_wallet/', views.pay_with_wallet_minutes, name='at_minutes_pay_with_wallet'),
+    path('at_min_mark_as_sent/<int:pk>', views.at_min_mark_as_sent, name='at_min_mark_as_sent'),
+    path('at_min_admin', views.admin_at_min_history, name='at_min_admin'),
+    path('history/at_minutes', views.at_credit_history, name="at-credit-history"),
+    path('services/at_minutes/', views.airtel_tigo_minutes, name='at_minutes'),
+
 
     path('mtn_admin/<str:status>', views.admin_mtn_history, name='mtn_admin'),
     path('excel_status/<str:status>/<str:to_change_to>', views.change_excel_status, name='excel_status'),

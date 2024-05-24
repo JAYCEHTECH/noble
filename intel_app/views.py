@@ -902,6 +902,10 @@ def paystack_webhook(request):
                             transaction_to_be_updated.transaction_status = "Completed"
                             transaction_to_be_updated.save()
 
+                            bundle = models.IshareBundlePrice.objects.get(price=float(
+                                real_amount)) if user.status == "User" else models.AgentIshareBundlePrice.objects.get(
+                                price=float(real_amount))
+
                             purchase_price = bundle.purchase_price
 
                             profit = float(real_amount) - float(purchase_price)
@@ -998,7 +1002,22 @@ def paystack_webhook(request):
                     else:
                         bundle = models.MTNBundlePrice.objects.get(price=float(real_amount)).bundle_volume
 
+                    new_mtn_transaction = models.MTNTransaction.objects.create(
+                        user=user,
+                        bundle_number=receiver,
+                        offer=f"{bundle}MB",
+                        reference=reference,
+                    )
+                    new_mtn_transaction.save()
+
                     print(receiver)
+
+                    if user.status == "User":
+                        bundle = models.MTNBundlePrice.objects.get(price=float(real_amount))
+                    elif user.status == "Agent":
+                        bundle = models.AgentMTNBundlePrice.objects.get(price=float(real_amount))
+                    else:
+                        bundle = models.MTNBundlePrice.objects.get(price=float(real_amount))
 
                     purchase_price = bundle.purchase_price
 
@@ -1012,13 +1031,6 @@ def paystack_webhook(request):
                     )
                     new_profit_instance.save()
 
-                    new_mtn_transaction = models.MTNTransaction.objects.create(
-                        user=user,
-                        bundle_number=receiver,
-                        offer=f"{bundle}MB",
-                        reference=reference,
-                    )
-                    new_mtn_transaction.save()
                     return HttpResponse(status=200)
                 else:
                     return HttpResponse(status=200)

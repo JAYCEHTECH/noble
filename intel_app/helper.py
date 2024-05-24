@@ -70,7 +70,8 @@ def send_bundle(user, receiver, bundle_amount, reference):
 
     response = requests.request("POST", url, headers=headers, data=payload)
 
-    print(response.json)
+    print(response.json())
+    print(response.text)
     return response
 
 

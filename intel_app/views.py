@@ -1356,15 +1356,13 @@ def afa_mark_as_sent(request, pk):
 
 @login_required(login_url='login')
 def wallet_history(request):
-    if request.user.data_bundle_access:
-        user_wallet_transactions = models.WalletTransaction.objects.filter(user=request.user).order_by(
-            'transaction_date').reverse()[:1000]
-        header = "Wallet Transactions"
-        net = "wallet"
-        context = {'txns': user_wallet_transactions, "header": header, "net": net}
-        return render(request, "layouts/wallet_history.html", context=context)
-    else:
-        return redirect("shop_home")
+    user_wallet_transactions = models.WalletTransaction.objects.filter(user=request.user).order_by(
+        'transaction_date').reverse()[:1000]
+    header = "Wallet Transactions"
+    net = "wallet"
+    context = {'txns': user_wallet_transactions, "header": header, "net": net}
+    return render(request, "layouts/wallet_history.html", context=context)
+
 
 def credit_user(request):
     form = forms.CreditUserForm()

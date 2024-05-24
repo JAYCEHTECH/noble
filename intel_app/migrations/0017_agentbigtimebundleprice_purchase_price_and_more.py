@@ -12,36 +12,36 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # migrations.AddField(
-        #     model_name='agentbigtimebundleprice',
-        #     name='purchase_price',
-        #     field=models.FloatField(blank=True, null=True),
-        # ),
-        # migrations.AddField(
-        #     model_name='agentisharebundleprice',
-        #     name='purchase_price',
-        #     field=models.FloatField(blank=True, null=True),
-        # ),
-        # migrations.AddField(
-        #     model_name='agentmtnbundleprice',
-        #     name='purchase_price',
-        #     field=models.FloatField(blank=True, null=True),
-        # ),
-        # migrations.AddField(
-        #     model_name='superagentbigtimebundleprice',
-        #     name='purchase_price',
-        #     field=models.FloatField(blank=True, null=True),
-        # ),
-        # migrations.AddField(
-        #     model_name='superagentisharebundleprice',
-        #     name='purchase_price',
-        #     field=models.FloatField(blank=True, null=True),
-        # ),
-        # migrations.AddField(
-        #     model_name='superagentmtnbundleprice',
-        #     name='purchase_price',
-        #     field=models.FloatField(blank=True, null=True),
-        # ),
+        migrations.AddField(
+            model_name='agentbigtimebundleprice',
+            name='purchase_price',
+            field=models.FloatField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='agentisharebundleprice',
+            name='purchase_price',
+            field=models.FloatField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='agentmtnbundleprice',
+            name='purchase_price',
+            field=models.FloatField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='superagentbigtimebundleprice',
+            name='purchase_price',
+            field=models.FloatField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='superagentisharebundleprice',
+            name='purchase_price',
+            field=models.FloatField(blank=True, null=True),
+        ),
+        migrations.AddField(
+            model_name='superagentmtnbundleprice',
+            name='purchase_price',
+            field=models.FloatField(blank=True, null=True),
+        ),
         migrations.CreateModel(
             name='WalletTransaction',
             fields=[

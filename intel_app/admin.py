@@ -22,17 +22,17 @@ class CustomUserAdmin(ExportActionMixin, UserAdmin):
 
     add_fieldsets = (
         (None, {
-            'classes': ('wide', ),
+            'classes': ('wide',),
             'fields': ('username', 'password1', 'password2', 'wallet')
         }),)
-    
+
 
 class IShareBundleTransactionAdmin(admin.ModelAdmin):
     list_display = ['user', 'bundle_number', 'offer', 'reference', 'transaction_status', 'transaction_date']
     search_fields = ['reference', 'bundle_number']
 
 
-class MTNTransactionAdmin(ExportActionMixin,admin.ModelAdmin):
+class MTNTransactionAdmin(ExportActionMixin, admin.ModelAdmin):
     list_display = ['user', 'bundle_number', 'offer', 'reference', 'transaction_status', 'transaction_date']
     search_fields = ['reference', 'bundle_number']
 
@@ -44,10 +44,16 @@ class PaymentAdmin(admin.ModelAdmin):
 class TopUpRequestAdmin(admin.ModelAdmin):
     list_display = ['user', 'reference', 'amount', 'date', 'status']
 
+
 class WalletTransactionAdmin(admin.ModelAdmin):
     list_display = ['user', 'transaction_type', 'transaction_amount', 'transaction_use', 'new_balance',
                     'transaction_date']
     search_fields = ['user', 'transaction_type']
+
+
+class VodafoneTransactionAdmin(admin.ModelAdmin):
+    list_display = ['user', 'bundle_number', 'offer', 'reference', 'transaction_status', 'transaction_date']
+    search_fields = ['reference', 'bundle_number']
 
 
 admin.site.register(models.CustomUser, CustomUserAdmin)
@@ -69,3 +75,11 @@ admin.site.register(models.AgentBigTimeBundlePrice)
 admin.site.register(models.SuperAgentBigTimeBundlePrice)
 admin.site.register(models.Announcement)
 admin.site.register(models.WalletTransaction, WalletTransactionAdmin)
+
+admin.site.register(models.AgentVodaBundlePrice)
+admin.site.register(models.VodaBundlePrice)
+admin.site.register(models.VodafoneTransaction, VodafoneTransactionAdmin)
+
+admin.site.register(models.ATMinuteTransaction)
+admin.site.register(models.ATCreditPrice)
+admin.site.register(models.AgentATCreditPrice)

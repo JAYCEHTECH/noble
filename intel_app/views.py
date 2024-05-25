@@ -2124,7 +2124,7 @@ def voda_pay_with_wallet(request):
         elif user.status == "Agent":
             bundle = models.AgentVodaBundlePrice.objects.get(price=float(amount)).bundle
         elif user.status == "Super Agent":
-            bundle = models.SuperAgentATCreditPrice.objects.get(price=float(amount)).bundle
+            bundle = models.SuperAgentVodaBundlePrice.objects.get(price=float(amount)).bundle
         else:
             bundle = models.VodaBundlePrice.objects.get(price=float(amount)).bundle
 

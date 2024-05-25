@@ -2120,13 +2120,13 @@ def voda_pay_with_wallet(request):
                 {'status': f'Your wallet balance is low. Contact the admin to recharge.'})
 
         if user.status == "User":
-            bundle = models.VodaBundlePrice.objects.get(price=float(amount)).bundle
+            bundle = models.VodaBundlePrice.objects.get(price=float(amount)).bundle_volume
         elif user.status == "Agent":
-            bundle = models.AgentVodaBundlePrice.objects.get(price=float(amount)).bundle
+            bundle = models.AgentVodaBundlePrice.objects.get(price=float(amount)).bundle_volume
         elif user.status == "Super Agent":
-            bundle = models.SuperAgentVodaBundlePrice.objects.get(price=float(amount)).bundle
+            bundle = models.SuperAgentVodaBundlePrice.objects.get(price=float(amount)).bundle_volume
         else:
-            bundle = models.VodaBundlePrice.objects.get(price=float(amount)).bundle
+            bundle = models.VodaBundlePrice.objects.get(price=float(amount)).bundle_volume
 
         print(bundle)
         new_mtn_transaction = models.VodafoneTransaction.objects.create(

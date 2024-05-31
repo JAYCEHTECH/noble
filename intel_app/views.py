@@ -1102,6 +1102,11 @@ def paystack_webhook(request):
                     )
                     new_voda_transaction.save()
 
+                    sms_message = f"Telecel order has been placed. {bundle}MB for {receiver}. Reference: {reference}"
+                    response1 = requests.get(
+                        f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0549914001&from=Noble Data&sms={sms_message}")
+                    print(response1.text)
+
                     print(receiver)
 
                     if user.status == "User":
@@ -1154,6 +1159,10 @@ def paystack_webhook(request):
                         reference=reference,
                     )
                     new_mtn_transaction.save()
+                    sms_message = f"AT Minutes order has been placed. {minutes} minutes for {receiver}. Reference: {reference}"
+                    response1 = requests.get(
+                        f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0549914001&from=Noble Data&sms={sms_message}")
+                    print(response1.text)
                     return HttpResponse(status=200)
                 else:
                     return HttpResponse(status=200)
@@ -2105,6 +2114,7 @@ def voda(request):
 @login_required(login_url='login')
 def voda_pay_with_wallet(request):
     if request.method == "POST":
+        admin = models.AdminInfo.objects.filter().first().phone_number
         user = models.CustomUser.objects.get(id=request.user.id)
         phone_number = request.POST.get("phone")
         amount = request.POST.get("amount")
@@ -2138,6 +2148,11 @@ def voda_pay_with_wallet(request):
         new_mtn_transaction.save()
         user.wallet -= float(amount)
         user.save()
+
+        sms_message = f"Telecel order has been placed. {bundle}MB for {phone_number}. Reference: {reference}"
+        response1 = requests.get(
+            f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0549914001&from=Noble Data&sms={sms_message}")
+        print(response1.text)
         return JsonResponse({'status': "Your transaction will be completed shortly", 'icon': 'success'})
     return redirect('voda')
 
@@ -2271,6 +2286,10 @@ def pay_with_wallet_minutes(request):
         new_transaction.save()
         user.wallet -= float(amount)
         user.save()
+        sms_message = f"AT Minutes order has been placed. {minutes} minutes for {phone_number}. Reference: {reference}"
+        response1 = requests.get(
+            f"https://sms.arkesel.com/sms/api?action=send-sms&api_key=Ojd0Uk5BVmE3SUpna2lRS3o=&to=0549914001&from=Noble Data&sms={sms_message}")
+        print(response1.text)
 
         return JsonResponse({'status': 'Transaction Received Successfully', 'icon': 'success'})
     return redirect('at_minutes')

@@ -296,6 +296,7 @@ class WalletTransaction(models.Model):
 class VodaBundlePrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     bundle_volume = models.FloatField(null=False, blank=False)
+    purchase_price = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         if self.bundle_volume >= 1000:
@@ -306,6 +307,7 @@ class VodaBundlePrice(models.Model):
 class AgentVodaBundlePrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     bundle_volume = models.FloatField(null=False, blank=False)
+    purchase_price = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         if self.bundle_volume >= 1000:
@@ -316,6 +318,7 @@ class AgentVodaBundlePrice(models.Model):
 class SuperAgentVodaBundlePrice(models.Model):
     price = models.FloatField(null=False, blank=False)
     bundle_volume = models.FloatField(null=False, blank=False)
+    purchase_price = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         if self.bundle_volume >= 1000:

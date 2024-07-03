@@ -52,6 +52,8 @@ urlpatterns = [
     path('elevated/topup-list', views.topup_list, name="topup_list"),
     path('credit/<str:reference>', views.credit_user_from_list, name='credit'),
     path('paystack_webhook', views.paystack_webhook, name='paystack_webhook'),
+    path('check_payment_status/<str:reference>', views.check_payment_status, name='check_payment_status'),
+    path('payment_receipt/<str:reference>', views.payment_receipt, name='payment_receipt'),
 
     path('query_transaction', views.query_txn, name='query_txn'),
 
@@ -63,6 +65,8 @@ urlpatterns = [
 
     path('elevated/profit_calculator', views.profit_home, name='profit_home'),
     path('elevated/profit/<str:channel>', views.channel_profit, name='channel_profit'),
+
+    path('anmgw_payment_checkout/<str:reference>', views.anmgw_payment_page, name='anmgw_payment_checkout'),
 
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

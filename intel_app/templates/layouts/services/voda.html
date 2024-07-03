@@ -50,8 +50,14 @@
               </div>
               <input type="hidden" value={{email}} class="email">
               <input type="hidden" value={{ref}} class="reference">
-              <button type="submit" class="btn btn-success paystack-btn" onclick="payWithPaystack()"> Pay </button>
-              <button type="button" class="btn btn-primary pay-with-wallet">Pay with Wallet</button>
+              {% if payment_method == 'Paystack' %}
+    <button type="submit" class="btn btn-success paystack-btn" onclick="payWithPaystack()"> Pay with Paystack </button>
+  {% elif payment_method == 'Direct' %}
+    <button type="button" class="btn btn-info pay-with-direct" onclick="payWithDirect()">Pay with Direct</button>
+  {% elif payment_method == 'AppsNMobile' %}
+    <button type="button" class="btn btn-warning pay-with-appsNMobile" onclick="payWithAppsNMobile()">Pay with AppsNMobile</button>
+  {% endif %}
+  <button type="button" class="btn btn-primary pay-with-wallet">Pay with Wallet</button>
               <a style="display: none" class="spinner-border process text-primary mt-2" role="status"></a>
               <h6 class="mt-2"><i class="fa fa-money"></i> Wallet Balance: GHS {{wallet}}</h6>
                             <a href="{% url 'topup-info'%}">Want to top up your wallet? Click here!</a>
@@ -168,6 +174,18 @@ $("body").on('click', '.pay-with-wallet', function(e){
       },
     });
   })
+
+function payWithDirect() {
+    // Handle Direct payment
+    // You can add the necessary JavaScript logic here for Direct
+    document.getElementById('tigoPaymentForm').submit();
+  }
+
+  function payWithAppsNMobile() {
+    // Handle AppsNMobile payment
+    // You can add the necessary JavaScript logic here for AppsNMobile
+    document.getElementById('tigoPaymentForm').submit();
+  }
 </script>
 
 

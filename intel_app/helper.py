@@ -4,6 +4,10 @@ import requests
 from datetime import datetime
 from decouple import config
 
+import uuid
+from django.utils import timezone
+from intel_app.models import Payment  # Replace with your actual app name
+
 ishare_map = {
     2: 50,
     4: 52,
@@ -24,6 +28,14 @@ ishare_map = {
     285: 100000,
     560: 200000
 }
+
+
+def generate_unique_exttrid():
+    while True:
+        exttrid = uuid.uuid4().hex  # Generates a random UUID
+        if not Payment.objects.filter(reference=exttrid).exists():
+            return exttrid
+
 
 def ref_generator():
     now_time = datetime.now().strftime('%H%M%S')

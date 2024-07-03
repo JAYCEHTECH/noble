@@ -75,6 +75,7 @@
               <p class="font-weight-bold">Afa Bundle Price: GHS{{price}}</p>
               <input type="hidden" value={{email}} class="email">
               <input type="hidden" value={{ref}} class="reference">
+                <input type="hidden" value={{price}} class="price">
               <button type="submit" class="btn btn-success"> Pay Online</button>
               <button type="button" class="btn btn-primary pay-with-wallet">Pay with Wallet</button>
               <a style="display: none" class="spinner-border process text-primary mt-2" role="status"></a>
@@ -96,6 +97,7 @@
   const paymentForm = document.getElementById('tigoPaymentForm');
   let email = $(".email").val()
   let ref = $(".reference").val()
+  let price = $(".price").val()
 //   console.log(email + ref)
 //   paymentForm.addEventListener("submit", payWithPaystack, false);
 //   function payWithPaystack(e) {
@@ -188,7 +190,7 @@ $("body").on('click', '.pay-with-wallet', function(e){
       url: "/afa_pay_with_wallet/",
       data: {
         phone: phonenumber,
-            amount: 5,
+            amount: Number(price),
             reference: ref,
             name: name,
             card: card,

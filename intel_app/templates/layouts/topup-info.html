@@ -32,13 +32,21 @@
               <div class="divider mx-auto"></div>
           </div>
 
-        <form action="" method="post">
+        <form action="" method="post" id="topupform">
           {% csrf_token %}
           <div class="form-group col-md-6">
                 <label>Amount Paid</label>
-                <input name="amount" class="form-control" type="number" step="0.1" placeholder="100">
+              <input type="hidden" value="{{ email }}" class="email">
+        <input type="hidden" value="{{ ref }}" class="reference">
+                <input name="amount" id="amountt" class="form-control" type="number" step="0.1" placeholder="100">
           </div>
-          <button type="submit" class="btn btn-primary">Request</button>
+                        {% if payment_method == 'Paystack' %}
+    <button type="submit" class="btn btn-success paystack-btn" onclick="payWithPaystack()"> Pay with Paystack </button>
+  {% elif payment_method == 'Direct' %}
+    <button type="button" class="btn btn-info pay-with-direct" onclick="payWithDirect()">Request</button>
+  {% elif payment_method == 'AppsNMobile' %}
+    <button type="button" class="btn btn-warning pay-with-appsNMobile" onclick="payWithAppsNMobile()">Pay with AppsNMobile</button>
+  {% endif %}
         </form>
 
       </div>
@@ -52,5 +60,51 @@
 
 
 {% block scripts %}
+    <script>
 
+    const paymentForm = document.getElementById('topupform');
+  let email = $(".email").val();
+  let ref = $(".reference").val();
+
+    paymentForm.addEventListener("submit", payWithPaystack, false);
+
+
+  function payWithPaystack(e) {
+    e.preventDefault();
+    let amount = $("#amountt").val();
+
+    let handler = PaystackPop.setup({
+      key: 'pk_live_2230bb77b771f4a0486d82574d23c7e936ed8188',
+      email: email,
+      amount: Math.floor((1.0195 * amount) * 100),
+      currency: "GHS",
+      ref: ref,
+      metadata: {
+        'channel': "topup",
+        'real_amount': amount,
+        'db_id': "{{id}}"
+      },
+      onClose: function(){
+        swal("Transaction Closed");
+        location.reload();
+      },
+      callback: function(response){
+        location.reload();
+      }
+    });
+
+    handler.openIframe();
+  }
+function payWithDirect() {
+    // Handle Direct payment
+    // You can add the necessary JavaScript logic here for Direct
+    document.getElementById('topupform').submit();
+  }
+
+  function payWithAppsNMobile() {
+    // Handle AppsNMobile payment
+    // You can add the necessary JavaScript logic here for AppsNMobile
+    document.getElementById('topupform').submit();
+  }
+  </script>
 {% endblock scripts %}

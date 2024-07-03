@@ -38,6 +38,18 @@ class AdminInfo(models.Model):
     )
     payment_channel = models.CharField(max_length=250, choices=choices)
     afa_price = models.FloatField(null=True, blank=True)
+    payment_choices = (
+        ("Direct", "Direct"),
+        ("Paystack", "Paystack"),
+        ("AppsNMobile", "AppsNMobile"),
+    )
+    active_payment = models.CharField(max_length=250, choices=payment_choices, default="AppsNMobile")
+    topup_payment_choices = (
+        ("Direct", "Direct"),
+        ("Paystack", "Paystack"),
+        ("AppsNMobile", "AppsNMobile"),
+    )
+    topup_active_payment = models.CharField(max_length=250, choices=topup_payment_choices, default="Direct")
 
 
 class BigTimeBundlePrice(models.Model):
@@ -236,6 +248,7 @@ class Payment(models.Model):
         ("mtn", "mtn"),
         ("ishare", "ishare"),
         ("bigtime", "bigtime"),
+        ("telecel", "telecel"),
         ("afa", "afa"),
         ("topup", "topup")
     )

@@ -138,3 +138,14 @@ class ATCreditForm(forms.Form):
         elif status == "Super Agent":
             self.fields['offers'].queryset = models.SuperAgentATCreditPrice.objects.all
         # self.fields['size'].queryset = models.Size.objects.filter(domain=domain)
+
+
+class AppsNMobileForm(forms.Form):
+    phone_number = forms.IntegerField(
+        widget=forms.NumberInput(attrs={'class': 'form-control phone', 'placeholder': '0270000000'}))
+    networks = (
+        ("AIR", "AirtelTigo"),
+        ("VOD", "Telecel"),
+        ("MTN", "MTN")
+    )
+    mobile_network = forms.CharField(widget=forms.Select(attrs={'class': 'form-control region'}, choices=networks))

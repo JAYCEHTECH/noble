@@ -1691,11 +1691,13 @@ def topup_info(request):
             return redirect("anmgw_payment_checkout", reference=new_payment.reference)
     active_payment = models.AdminInfo.objects.filter().first().topup_active_payment
     user_email = request.user.email
+    db_user_id = request.user.id
     reference = helper.ref_generator()
     context = {
         'payment_method': active_payment,
         "email": user_email,
-        "ref": reference
+        "ref": reference,
+        'id': db_user_id,
     }
     return render(request, "layouts/topup-info.html", context=context)
 

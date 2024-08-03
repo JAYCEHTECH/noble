@@ -16,8 +16,8 @@
   --warning: #FAC14D;
   --danger: #FF4943;
   --grey: #B4B2C5;
-  --dark: #2D2B3A;
-  --light: #F6F5FC;
+  --dark: #02000d;
+  --light: #fcfcfc;
 }
 
 
@@ -26,7 +26,7 @@
 body {
   font-family: "Poppins", sans-serif;
   line-height: 1.5;
-  color: #2D2B3A;
+  color: #02000d;
 }
 
 a {
@@ -127,7 +127,7 @@ a.bg-grey:hover, a.bg-grey:focus {
 }
 
 .bg-light {
-  background-color: #F6F5FC !important;
+  background-color: #fcfcfc !important;
 }
 
 a.bg-light:hover, a.bg-light:focus {
@@ -135,7 +135,7 @@ a.bg-light:hover, a.bg-light:focus {
 }
 
 .bg-dark {
-  background-color: #2D2B3A !important;
+  background-color: #02000d !important;
 }
 
 a.bg-dark:hover, a.bg-dark:focus {
@@ -207,7 +207,7 @@ a.text-grey:hover, a.text-grey:focus {
 }
 
 .text-light {
-  color: #F6F5FC !important;
+  color: #fcfcfc !important;
 }
 
 a.text-light:hover, a.text-light:focus {
@@ -215,7 +215,7 @@ a.text-light:hover, a.text-light:focus {
 }
 
 .text-dark {
-  color: #2D2B3A !important;
+  color: #02000d !important;
 }
 
 a.text-dark:hover, a.text-dark:focus {
@@ -280,11 +280,11 @@ a.text-dark:hover, a.text-dark:focus {
 }
 
 .border-light {
-  border-color: #F6F5FC !important;
+  border-color: #fcfcfc !important;
 }
 
 .border-dark {
-  border-color: #2D2B3A !important;
+  border-color: #02000d !important;
 }
 
 /* Social Color */
@@ -614,7 +614,7 @@ a.text-dark:hover, a.text-dark:focus {
 
 .btn-light:hover {
   color: #8e8aad;
-  background-color: #F6F5FC;
+  background-color: #fcfcfc;
   border-color: transparent;
 }
 
@@ -645,7 +645,7 @@ a.text-dark:hover, a.text-dark:focus {
 
 .btn-dark {
   color: #fff;
-  background-color: #2D2B3A;
+  background-color: #02000d;
   border-color: transparent;
 }
 
@@ -658,7 +658,7 @@ a.text-dark:hover, a.text-dark:focus {
 .btn-dark:not(:disabled):not(.disabled):active, .btn-dark:not(:disabled):not(.disabled).active,
 .show > .btn-dark.dropdown-toggle {
   color: #fff;
-  background-color: #2D2B3A;
+  background-color: #02000d;
   border-color: #1d1b25;
 }
 
@@ -700,7 +700,7 @@ a.text-dark:hover, a.text-dark:focus {
 }
 
 .btn-outline:hover {
-  background-color: #F6F5FC;
+  background-color: #fcfcfc;
 }
 
 .btn-outline-primary {
@@ -928,14 +928,14 @@ a.text-dark:hover, a.text-dark:focus {
 }
 
 .btn-outline-light {
-  color: #F6F5FC;
-  border-color: #F6F5FC;
+  color: #fcfcfc;
+  border-color: #fcfcfc;
 }
 
 .btn-outline-light:hover {
   color: #343531;
-  background-color: #F6F5FC;
-  border-color: #F6F5FC;
+  background-color: #fcfcfc;
+  border-color: #fcfcfc;
 }
 
 .btn-outline-light:focus, .btn-outline-light.focus {
@@ -943,15 +943,15 @@ a.text-dark:hover, a.text-dark:focus {
 }
 
 .btn-outline-light.disabled, .btn-outline-light:disabled {
-  color: #F6F5FC;
+  color: #fcfcfc;
   background-color: transparent;
 }
 
 .btn-outline-light:not(:disabled):not(.disabled):active, .btn-outline-light:not(:disabled):not(.disabled).active,
 .show > .btn-outline-light.dropdown-toggle {
   color: #343531;
-  background-color: #F6F5FC;
-  border-color: #F6F5FC;
+  background-color: #fcfcfc;
+  border-color: #fcfcfc;
 }
 
 .btn-outline-light:not(:disabled):not(.disabled):active:focus, .btn-outline-light:not(:disabled):not(.disabled).active:focus,
@@ -960,14 +960,14 @@ a.text-dark:hover, a.text-dark:focus {
 }
 
 .btn-outline-dark {
-  color: #2D2B3A;
-  border-color: #2D2B3A;
+  color: #02000d;
+  border-color: #02000d;
 }
 
 .btn-outline-dark:hover {
   color: #fff;
-  background-color: #2D2B3A;
-  border-color: #2D2B3A;
+  background-color: #02000d;
+  border-color: #02000d;
 }
 
 .btn-outline-dark:focus, .btn-outline-dark.focus {
@@ -975,15 +975,15 @@ a.text-dark:hover, a.text-dark:focus {
 }
 
 .btn-outline-dark.disabled, .btn-outline-dark:disabled {
-  color: #2D2B3A;
+  color: #02000d;
   background-color: transparent;
 }
 
 .btn-outline-dark:not(:disabled):not(.disabled):active, .btn-outline-dark:not(:disabled):not(.disabled).active,
 .show > .btn-outline-dark.dropdown-toggle {
   color: #fff;
-  background-color: #2D2B3A;
-  border-color: #2D2B3A;
+  background-color: #02000d;
+  border-color: #02000d;
 }
 
 .btn-outline-dark:not(:disabled):not(.disabled):active:focus, .btn-outline-dark:not(:disabled):not(.disabled).active:focus,
@@ -1206,7 +1206,7 @@ a.text-dark:hover, a.text-dark:focus {
 
 .page-link:hover {
   color: #645F88;
-  background-color: #F6F5FC;
+  background-color: #fcfcfc;
   border-color: #dee1e6;
 }
 
@@ -1397,7 +1397,7 @@ a.text-dark:hover, a.text-dark:focus {
   margin-top: 16px;
   margin-bottom: 16px;
   height: 320px;
-  background-color: #F6F5FC;
+  background-color: #fcfcfc;
   color: #645F88;
   border-radius: 30px;
 }
@@ -1410,7 +1410,7 @@ a.text-dark:hover, a.text-dark:focus {
 }
 
 .page-banner.home-banner h1 {
-  color: #2D2B3A;
+  color: #02000d;
 }
 
 .page-banner.home-banner .img-place {
@@ -1485,7 +1485,7 @@ a.text-dark:hover, a.text-dark:focus {
 
 .title-section {
   max-width: 450px;
-  color: #2D2B3A;
+  color: #02000d;
   font-weight: 600;
 }
 
@@ -1588,7 +1588,7 @@ a.text-dark:hover, a.text-dark:focus {
 }
 
 .features h5 {
-  color: #2D2B3A;
+  color: #02000d;
 }
 
 .features p {
@@ -1756,7 +1756,7 @@ a.text-dark:hover, a.text-dark:focus {
 
 .card-blog .post-title a {
   font-weight: 500;
-  color: #2D2B3A;
+  color: #02000d;
 }
 
 .card-blog .post-excerpt {
@@ -1816,7 +1816,7 @@ a.text-dark:hover, a.text-dark:focus {
 
 .client-section {
   padding: 64px 0;
-  background-color: #F6F5FC;
+  background-color: #fcfcfc;
 }
 
 .client-section .item {
@@ -1914,7 +1914,7 @@ a.text-dark:hover, a.text-dark:focus {
   line-height: 44px;
   text-align: center;
   border-radius: 50%;
-  background-color: #F6F5FC;
+  background-color: #fcfcfc;
   color: #898798;
   transition: all .2s linear;
 }
@@ -1943,7 +1943,7 @@ a.text-dark:hover, a.text-dark:focus {
 .blog-single-wrap .header .post-thumb {
   width: 100%;
   height: 250px;
-  background-color: #F6F5FC;
+  background-color: #fcfcfc;
   overflow: hidden;
 }
 
@@ -2058,7 +2058,7 @@ a.text-dark:hover, a.text-dark:focus {
 
 .search-widget .form-control {
   margin-bottom: 8px;
-  background-color: #F6F5FC;
+  background-color: #fcfcfc;
   border-color: transparent;
   box-shadow: none !important;
 }
@@ -2107,7 +2107,7 @@ a.text-dark:hover, a.text-dark:focus {
   margin-right: 15px;
   width: 100px;
   height: 80px;
-  background-color: #F6F5FC;
+  background-color: #fcfcfc;
   overflow: hidden;
 }
 
@@ -2159,7 +2159,7 @@ a.text-dark:hover, a.text-dark:focus {
   display: block;
   width: 100%;
   height: 100%;
-  background-color: #F6F5FC;
+  background-color: #fcfcfc;
   overflow: hidden;
 }
 
